@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tu Empresa — Importación y Exportación de Coches</title>
+  <meta name="description" content="Importamos y exportamos coches a medida. Inspección, logística, matriculación y garantía. Pide presupuesto sin compromiso." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {margin:0;font-family:Inter,Arial,sans-serif;background:#fafafa;color:#111;}
+    header {background:#fff;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10;}
+    nav {max-width:1100px;margin:0 auto;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;}
+    nav a {margin:0 10px;text-decoration:none;color:#111;font-weight:600;}
+    .btn {display:inline-block;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:700;}
+    .btn.primary {background:#111;color:#fff;}
+    section {max-width:1100px;margin:0 auto;padding:60px 20px;}
+    .hero {display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;}
+    @media (max-width:800px){.hero{grid-template-columns:1fr;}}
+    .hero img {width:100%;border-radius:10px;}
+    .grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+    .card {background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;}
+    footer {background:#fff;border-top:1px solid #eee;text-align:center;padding:20px;}
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <div><strong>Tu Empresa</strong></div>
+      <div>
+        <a href="#servicios">Servicios</a>
+        <a href="#stock">Stock</a>
+        <a href="#contacto" class="btn primary">Contacto</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Importación y Exportación de Coches</h1>
+      <p>Traemos el coche que buscas desde cualquier parte de Europa o EE.UU. y nos encargamos de toda la gestión: transporte, aduanas, matriculación y garantía.</p>
+      <a href="#contacto" class="btn primary">Solicitar información</a>
+    </div>
+    <div>
+      <img src="https://picsum.photos/seed/coche1/800/450" alt="Coche ejemplo">
+    </div>
+  </section>
+
+  <section id="servicios">
+    <h2>Servicios</h2>
+    <div class="grid">
+      <div class="card"><b>Búsqueda a medida</b><p>Encontramos el coche que quieres con historial verificado.</p></div>
+      <div class="card"><b>Transporte y aduanas</b><p>Gestión logística completa hasta tu puerta.</p></div>
+      <div class="card"><b>Matriculación</b><p>Nos encargamos de ITV y papeles en España.</p></div>
+    </div>
+  </section>
+
+  <section id="stock">
+    <h2>Ejemplos de stock</h2>
+    <div class="grid">
+      <div class="card">
+        <img src="https://picsum.photos/seed/audi/600/350" alt="Audi">
+        <p><b>Audi A4 2019</b><br>120.000 km · Diesel</p>
+      </div>
+      <div class="card">
+        <img src="https://picsum.photos/seed/bmw/600/350" alt="BMW">
+        <p><b>BMW 330e 2020</b><br>80.000 km · Híbrido</p>
+      </div>
+      <div class="card">
+        <img src="https://picsum.photos/seed/mercedes/600/350" alt="Mercedes">
+        <p><b>Mercedes C220d 2018</b><br>150.000 km · Diesel</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contacto">
+    <h2>Contacto</h2>
+    <form>
+      <input type="text" name="nombre" placeholder="Nombre" required><br><br>
+      <input type="email" name="email" placeholder="Email" required><br><br>
+      <textarea name="mensaje" placeholder="Mensaje" rows="5"></textarea><br><br>
+      <button type="submit" class="btn primary">Enviar</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>© 2025 Tu Empresa · Importación y Exportación de Coches</p>
+  </footer>
+</body>
+</html>
