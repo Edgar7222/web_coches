@@ -86,5 +86,53 @@
   <footer>
     <p>© 2025 Tu Empresa · Importación y Exportación de Coches</p>
   </footer>
+  <script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const SUPABASE_URL = "https://swzizabjkzllxwbrcsnp.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  async function cargarCoches() {
+    const grid = document.querySelector("#stock .grid");
+    if (!grid) return;
+
+    const { data, error } = await supabase
+      .from("cars")
+      .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo")
+      .eq("estado_publicacion", "disponible")
+      .order("created_at", { ascending: false })
+      .limit(12);
+
+    if (error) {
+      console.error(error);
+      grid.innerHTML = "<p>Error cargando coches.</p>";
+      return;
+    }
+
+    grid.innerHTML = (data || []).map(c => `
+      <div class="card">
+        <img src="${(c.imagenes?.[0] || 'https://picsum.photos/seed/placeholder/800/450')}" alt="${c.marca} ${c.modelo}">
+        <div style="padding:10px">
+          <b>${c.marca} ${c.modelo}${c.version ? ' ' + c.version : ''} ${c.anio || ''}</b><br>
+          <span>${(c.km ?? 0).toLocaleString('es-ES')} km · ${c.combustible || ''}${c.caja ? ' · ' + c.caja : ''}</span><br>
+          ${c.precio_objetivo ? `<span class="tag">${Number(c.precio_objetivo).toLocaleString('es-ES')} €</span>` : `<span class="tag">Bajo pedido</span>`}
+          <div style="margin-top:8px"><a class="btn" href="#contacto" onclick="selCar('${c.id}','${c.marca} ${c.modelo}')">Solicitar oferta</a></div>
+        </div>
+      </div>
+    `).join('') || "<p>Sin coches publicados aún.</p>";
+  }
+
+  window.selCar = (id, name) => {
+    const f = document.querySelector('#contacto form');
+    if (!f) return;
+    f.dataset.car_id = id;
+    const ta = f.querySelector('textarea[name=mensaje]');
+    if (ta && !ta.value.includes('[Interés]')) ta.value = `[Interés] ${name}\n` + (ta.value || '');
+  };
+
+  cargarCoches();
+</script>
+
 </body>
 </html>
