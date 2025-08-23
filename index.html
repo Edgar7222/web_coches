@@ -76,10 +76,20 @@
   <section id="contacto">
     <h2>Contacto</h2>
     <form>
-      <input type="text" name="nombre" placeholder="Nombre" required><br><br>
-      <input type="email" name="email" placeholder="Email" required><br><br>
-      <textarea name="mensaje" placeholder="Mensaje" rows="5"></textarea><br><br>
-      <button type="submit" class="btn primary">Enviar</button>
+      <input type="text" name="nombre" placeholder="Tu nombre" required>
+  <input type="email" name="email" placeholder="Tu email" required>
+  <input type="tel" name="telefono" placeholder="Tu teléfono">
+  <textarea name="mensaje" placeholder="Cuéntanos qué necesitas" required></textarea>
+
+  <!-- Se rellenan automáticamente al hacer clic en "Solicitar oferta" -->
+  <input type="hidden" name="car_id" id="car_id">
+  <input type="hidden" name="coche_interes" id="coche_interes">
+
+  <!-- Honeypot anti-spam (oculto a humanos) -->
+  <input type="text" name="company" autocomplete="off" style="position:absolute; left:-9999px;">
+
+  <button type="submit" id="submit-btn">Enviar</button>
+  <p id="form-status" aria-live="polite"></p>
     </form>
   </section>
 
@@ -93,6 +103,82 @@
   const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
+  // 1) Cuando hagan clic en "Solicitar oferta", cargamos el coche en el formulario
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('.solicitar-oferta');
+    if (!link) return;
+
+    const carId = link.dataset.carId || '';
+    const carName = link.dataset.carName || '';
+
+    const carIdInput = document.getElementById('car_id');
+    const carNameInput = document.getElementById('coche_interes');
+
+    if (carIdInput) carIdInput.value = carId;
+    if (carNameInput) carNameInput.value = carName;
+  });
+
+  // 2) Envío del formulario → INSERT en Supabase
+  const form = document.getElementById('contact-form');
+  const btn = document.getElementById('submit-btn');
+  const statusEl = document.getElementById('form-status');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = '';
+    btn.disabled = true;
+
+    const fd = new FormData(form);
+
+    // Honeypot simple: si el bot rellena "company", abortamos
+    if (fd.get('company')) {
+      btn.disabled = false;
+      return;
+    }
+
+    const payload = {
+      nombre: (fd.get('nombre') || '').toString().trim(),
+      email: (fd.get('email') || '').toString().trim(),
+      telefono: (fd.get('telefono') || '').toString().trim() || null,
+      mensaje: (fd.get('mensaje') || '').toString().trim(),
+      coche_interes: (fd.get('coche_interes') || '').toString().trim() || null,
+      car_id: (fd.get('car_id') || '').toString().trim() || null,
+      page_url: location.href,
+      user_agent: navigator.userAgent
+    };
+
+    if (!payload.nombre || !payload.email || !payload.mensaje) {
+      statusEl.textContent = 'Por favor, rellena nombre, email y mensaje.';
+      btn.disabled = false;
+      return;
+    }
+
+    const { error } = await supabase.from('leads').insert([payload]);
+
+    if (error) {
+      console.error('[Supabase INSERT error]', error);
+      statusEl.textContent = 'Error al enviar. Intenta de nuevo.';
+      btn.disabled = false;
+      return;
+    }
+
+    // (Opcional) Notificación por email vía Vercel (sección 4)
+    try {
+      await fetch('/api/notify-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn('Fallo al notificar por email (opcional):', err);
+    }
+
+    statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
+    form.reset();
+    btn.disabled = false;
+  });
+
+  /*
   async function cargarCoches() {
     const grid = document.querySelector("#stock .grid");
     if (!grid) return;
@@ -132,6 +218,7 @@
   };
 
   cargarCoches();
+  */
 </script>
 
 </body>
