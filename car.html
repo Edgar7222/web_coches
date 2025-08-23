@@ -3,14 +3,30 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Detalle del vehículo</title>
+  <title id="meta-title">Detalle del vehículo</title>
+  <meta name="description" id="meta-description" content="Ficha completa del vehículo premium importado: fotos, vídeo, especificaciones, extras, precio y contacto." />
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="product" />
+  <meta property="og:title" id="og-title" content="Coche premium — Detalle" />
+  <meta property="og:description" id="og-description" content="Fotos, vídeo, especificaciones y precio del coche premium seleccionado." />
+  <meta property="og:image" id="og-image" content="https://tudominio.com/og-car.jpg" />
+  <meta property="og:url" content="https://tudominio.com/car.html" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" id="twitter-title" content="Coche premium — Detalle" />
+  <meta name="twitter:description" id="twitter-description" content="Fotos, vídeo, especificaciones y precio del coche premium seleccionado." />
+  <meta name="twitter:image" id="twitter-image" content="https://tudominio.com/og-car.jpg" />
+
+  <!-- JSON-LD dinámico -->
+  <script id="car-jsonld" type="application/ld+json"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --ink:#111827;
-      --indigo:#6366F1;
-      --ink-weak:#6B7280;
-      --card:#ffffff;
+      --ink:#111827; --indigo:#6366F1;
+      --ink-weak:#6B7280; --card:#ffffff;
       --shadow:0 8px 24px rgba(0,0,0,.08);
     }
     *{box-sizing:border-box}
@@ -18,113 +34,73 @@
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px}
 
-    /* ===== Carrusel ===== */
-    .gallery{
-      position:relative;
-      overflow:hidden;
-      border-radius:16px;
-      background:#000;
-      box-shadow:var(--shadow);
-      margin:18px 0 28px;
-    }
+    /* Carrusel */
+    .gallery{position:relative;overflow:hidden;border-radius:16px;background:#000;box-shadow:var(--shadow);margin:18px 0 28px}
     .slider{width:100%;height:100%}
-    .slider-track{
-      display:flex;
-      /* velocidad del deslizamiento */
-      transition:transform .35s ease-out;
-    }
-    .slide{
-      min-width:100%;
-      height:clamp(260px,48vw,520px);
-      object-fit:cover;
-      user-select:none;
-      pointer-events:none;
-      background:#111;
-    }
+    .slider-track{display:flex;transition:transform .35s ease-out}
+    .slide{min-width:100%;height:clamp(260px,48vw,520px);object-fit:cover;user-select:none;pointer-events:none;background:#111}
 
-    /* Flechas bonitas */
-    .nav-btn{
-      position:absolute;top:50%;transform:translateY(-50%);
-      width:56px;height:56px;border:none;border-radius:999px;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(0,0,0,.45);backdrop-filter:blur(2px);
-      cursor:pointer;transition:transform .2s ease, background .2s ease, opacity .2s ease;
-      box-shadow:0 4px 16px rgba(0,0,0,.25);
-      color:#fff;z-index:5;opacity:.95;
-    }
+    /* Flechas */
+    .nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;border:none;border-radius:999px;
+      display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);
+      cursor:pointer;transition:transform .2s, background .2s, opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.25);color:#fff;z-index:5;opacity:.95}
     .nav-btn:hover{background:rgba(0,0,0,.7);transform:translateY(-50%) scale(1.06)}
-    .nav-prev{left:18px}
-    .nav-next{right:18px}
+    .nav-prev{left:18px} .nav-next{right:18px}
     .nav-btn svg{width:28px;height:28px;stroke:#fff;stroke-width:2.5;fill:none}
     .nav-btn:disabled{opacity:0;pointer-events:none}
 
-    /* Puntos */
+    /* Dots */
     .dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
     .dot{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.55);transition:transform .2s,background .2s;cursor:pointer}
-    .dot:hover{transform:scale(1.15)}
-    .dot.active{background:#fff}
+    .dot:hover{transform:scale(1.15)} .dot.active{background:#fff}
 
-    /* Vídeo y ficha */
-    .specs, form{
-      background:var(--card);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      padding:20px;
-      margin:22px 0;
-    }
+    /* Video y ficha */
+    .specs, form{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px;margin:22px 0}
     .specs p{margin:8px 0}
     iframe{width:100%;height:420px;border:none;border-radius:16px;box-shadow:var(--shadow);margin:22px 0}
 
     /* Form */
     form h2{margin:0 0 8px}
-    input,textarea{
-      width:100%;padding:12px 14px;margin:10px 0;
-      border:1px solid #e5e7eb;border-radius:12px;font:inherit;
-      transition:border .15s, box-shadow .15s;
-    }
-    input:focus,textarea:focus{
-      outline:none;border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,.18)
-    }
-    button{
-      background:var(--indigo);color:#fff;border:none;border-radius:999px;
-      padding:12px 22px;font-weight:700;cursor:pointer;transition:filter .2s, transform .05s;
-    }
-    button:hover{filter:brightness(1.03)}
-    button:active{transform:translateY(1px)}
+    label{font-weight:600;display:block;margin-top:10px}
+    input,textarea{width:100%;padding:12px 14px;margin:6px 0 12px;border:1px solid #e5e7eb;border-radius:12px;font:inherit;transition:border .15s,box-shadow .15s}
+    input:focus,textarea:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,.18)}
+    button{background:var(--indigo);color:#fff;border:none;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer;transition:filter .2s,transform .05s}
+    button:hover{filter:brightness(1.03)} button:active{transform:translateY(1px)}
     #form-status{color:var(--ink-weak);margin-top:6px}
   </style>
 </head>
 <body>
-  <div class="container" id="car-container">
+  <main class="container" id="car-container">
     <h1 id="car-title">Cargando…</h1>
 
-    <!-- Carrusel -->
-    <div class="gallery" id="car-gallery"></div>
+    <!-- Carrusel accesible -->
+    <div class="gallery" id="car-gallery" role="region" aria-label="Galería de imágenes del coche"></div>
 
     <!-- Vídeo -->
-    <div id="car-video"></div>
+    <div id="car-video" role="region" aria-label="Vídeo del coche"></div>
 
     <!-- Especificaciones -->
-    <div class="specs" id="car-specs"></div>
+    <section class="specs" id="car-specs" aria-label="Especificaciones técnicas"></section>
 
     <!-- Formulario -->
-    <form id="contact-form">
+    <form id="contact-form" aria-label="Formulario de contacto">
       <h2>Solicita información</h2>
-      <input type="text" name="nombre" placeholder="Nombre" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <textarea name="mensaje" placeholder="Mensaje" rows="4" required></textarea>
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Email" required>
+      <label for="mensaje">Mensaje</label>
+      <textarea id="mensaje" name="mensaje" placeholder="Mensaje" rows="4" required></textarea>
       <input type="hidden" name="coche_interes" id="coche_interes">
       <button type="submit">Enviar</button>
       <p id="form-status" aria-live="polite"></p>
     </form>
-  </div>
+  </main>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    // Mismas credenciales que en index.html
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
+    const SUPABASE_ANON = "TU-CLAVE";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
     const $ = sel => document.querySelector(sel);
@@ -139,20 +115,13 @@
 
       const { data, error } = await supabase
         .from('cars')
-        .select(`
-          id, marca, modelo, version, anio, km, combustible, caja,
-          imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion
-        `)
+        .select(`id, marca, modelo, version, anio, km, combustible, caja,
+                 imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion`)
         .eq('id', carId)
         .eq('estado_publicacion', 'disponible')
         .single();
 
-      if (error) {
-        console.error(error);
-        document.body.innerHTML = '<p style="padding:24px">Error cargando coche.</p>';
-        return;
-      }
-      if (!data) {
+      if (error || !data) {
         document.body.innerHTML = '<p style="padding:24px">Coche no encontrado.</p>';
         return;
       }
@@ -160,10 +129,40 @@
       const title = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
       $('#car-title').textContent = title;
 
-      /* ======= Render carrusel ======= */
+      // === SEO dinámico ===
+      document.title = `${title} — Detalle del vehículo`;
+      $('#meta-description').setAttribute("content", `Coche ${title}, ${data.km?.toLocaleString('es-ES')} km, ${data.combustible}, ${data.caja}, precio ${data.precio_objetivo ? data.precio_objetivo.toLocaleString('es-ES')+"€" : "Bajo pedido"}.`);
+      $('#og-title').setAttribute("content", title);
+      $('#og-description').setAttribute("content", data.descripcion || "Vehículo premium disponible.");
+      $('#twitter-title').setAttribute("content", title);
+      $('#twitter-description').setAttribute("content", data.descripcion || "Vehículo premium disponible.");
+
+      if (data.imagenes?.length) {
+        $('#og-image').setAttribute("content", data.imagenes[0]);
+        $('#twitter-image').setAttribute("content", data.imagenes[0]);
+      }
+
+      // === JSON-LD Product ===
+      const jsonld = {
+        "@context":"https://schema.org",
+        "@type":"Product",
+        "name": title,
+        "description": data.descripcion || "Vehículo premium disponible.",
+        "image": data.imagenes,
+        "brand": data.marca,
+        "model": data.modelo,
+        "offers": {
+          "@type": "Offer",
+          "price": data.precio_objetivo || "0",
+          "priceCurrency": "EUR",
+          "availability": "https://schema.org/InStock"
+        }
+      };
+      document.getElementById("car-jsonld").textContent = JSON.stringify(jsonld);
+
+      // === Render carrusel ===
       const images = Array.isArray(data.imagenes) ? data.imagenes : [];
       const gallery = $('#car-gallery');
-
       if (!images.length) {
         gallery.innerHTML = '<p style="padding:12px;color:#fff">Sin imágenes</p>';
       } else {
@@ -172,94 +171,22 @@
             <div class="slider-track">
               ${images.map(src => `<img class="slide" src="${src}" alt="${title}" loading="lazy">`).join('')}
             </div>
-            <button class="nav-btn nav-prev" aria-label="Anterior">
+            <button class="nav-btn nav-prev" aria-label="Imagen anterior">
               <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="nav-btn nav-next" aria-label="Siguiente">
+            <button class="nav-btn nav-next" aria-label="Imagen siguiente">
               <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div class="dots">${images.map((_,i)=>`<span class="dot" data-i="${i}"></span>`).join('')}</div>
-          </div>
-        `;
-
-        const track   = gallery.querySelector('.slider-track');
-        const prevBtn = gallery.querySelector('.nav-prev');
-        const nextBtn = gallery.querySelector('.nav-next');
-        const dots    = [...gallery.querySelectorAll('.dot')];
-
-        let idx = 0;
-        const N = images.length;
-
-        const set = (i) => {
-          idx = (i + N) % N;
-          track.style.transform = `translateX(-${idx * 100}%)`;
-          dots.forEach((d,k)=>d.classList.toggle('active', k === idx));
-        };
-
-        prevBtn.onclick = () => { stop(); set(idx - 1); start(); };
-        nextBtn.onclick = () => { stop(); set(idx + 1); start(); };
-        if (N <= 1) { prevBtn.disabled = true; nextBtn.disabled = true; }
-
-        dots.forEach(d => d.onclick = () => { stop(); set(+d.dataset.i); start(); });
-
-        // Autoplay estable (sin duplicar timers)
-        let timer = null;
-        const start = () => {
-          if (N <= 1) return;
-          if (timer) { clearInterval(timer); }
-          timer = setInterval(() => set(idx + 1), 3000); // 3s entre fotos
-        };
-        const stop = () => {
-          if (timer) { clearInterval(timer); timer = null; }
-        };
-        gallery.addEventListener('mouseenter', stop);
-        gallery.addEventListener('mouseleave', start);
-        document.addEventListener('visibilitychange', () => {
-          if (document.hidden) stop(); else start();
-        });
-
-        // Gestos táctiles / drag
-        let startX = 0, dx = 0, touching = false;
-        const onTouchStart = (e) => { touching = true; startX = (e.touches?.[0].clientX ?? e.clientX); stop(); };
-        const onTouchMove  = (e) => { if (!touching) return; const x = (e.touches?.[0].clientX ?? e.clientX); dx = x - startX; };
-        const onTouchEnd   = () => { if (!touching) return; if (Math.abs(dx) > 50) (dx < 0 ? set(idx + 1) : set(idx - 1)); touching = false; dx = 0; start(); };
-
-        gallery.addEventListener('touchstart', onTouchStart, {passive:true});
-        gallery.addEventListener('touchmove',  onTouchMove,  {passive:true});
-        gallery.addEventListener('touchend',   onTouchEnd);
-        gallery.addEventListener('mousedown',  onTouchStart);
-        gallery.addEventListener('mousemove',  onTouchMove);
-        gallery.addEventListener('mouseup',    onTouchEnd);
-
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowLeft')  { stop(); set(idx - 1); start(); }
-          if (e.key === 'ArrowRight') { stop(); set(idx + 1); start(); }
-        });
-
-        set(0);
-        start();
+            <div class="dots">${images.map((_,i)=>`<span class="dot" role="button" aria-label="Ver imagen ${i+1}" data-i="${i}"></span>`).join('')}</div>
+          </div>`;
       }
 
-      /* ======= Vídeo ======= */
-      const videoBox = $('#car-video');
-      if (data.video_url) {
-        let url = data.video_url.trim();
-        if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
-        if (url.endsWith('.mp4')) {
-          videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:16px;max-height:480px;box-shadow:var(--shadow)"></video>`;
-        } else {
-          videoBox.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
-        }
-      } else {
-        videoBox.innerHTML = '';
-      }
-
-      /* ======= Specs ======= */
+      // === Specs ===
       $('#car-specs').innerHTML = `
-        <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'} km</p>
+        <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
         <p><b>Combustible:</b> ${data.combustible ?? '-'}</p>
         <p><b>Caja:</b> ${data.caja ?? '-'}</p>
-        <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES') + ' €' : 'Bajo pedido'}</p>
+        <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+' €' : 'Bajo pedido'}</p>
         <p><b>Descripción:</b> ${data.descripcion || 'Sin descripción'}</p>
         <p><b>Extras:</b> ${data.extras || 'N/A'}</p>
       `;
@@ -267,10 +194,9 @@
       // Pre-rellenar interés
       $('#coche_interes').value = title;
     }
+    loadCar();
 
-    await loadCar();
-
-    // Envío del formulario (igual que en index, guardando lead + email best effort)
+    // === Formulario lead ===
     const form = document.getElementById('contact-form');
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -278,7 +204,6 @@
       const payload = {
         nombre: (fd.get('nombre')||'').toString().trim(),
         email:  (fd.get('email') ||'').toString().trim(),
-        telefono: null,
         mensaje: (fd.get('mensaje')||'').toString().trim(),
         coche_interes: (fd.get('coche_interes')||'').toString().trim(),
         page_url: location.href,
@@ -289,16 +214,14 @@
       statusEl.textContent = 'Enviando…';
 
       const { error } = await supabase.from('leads').insert([payload]);
-      if (error) { console.error(error); statusEl.textContent = 'Error guardando lead.'; return; }
+      if (error) { statusEl.textContent = 'Error guardando lead.'; return; }
 
       try {
         await fetch('/api/notify-lead', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
+          method:'POST', headers:{'Content-Type':'application/json'},
           body:JSON.stringify(payload)
         });
       } catch {}
-
       statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
       form.reset();
     });
