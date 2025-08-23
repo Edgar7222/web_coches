@@ -19,24 +19,35 @@
     button {background:#6366F1;color:#fff;padding:12px 20px;border:none;border-radius:999px;cursor:pointer;font-weight:600;}
 	
 	/* --- Carrusel --- */
-  .carousel { position: relative; margin:20px 0; border-radius:12px; overflow:hidden; }
-  .track    { display:flex; will-change:transform; }
-  .slide    { min-width:100%; user-select:none; pointer-events:none; }
-  .slide img{ width:100%; height:auto; display:block; }
-
-  .nav-btn {
-    position:absolute; top:50%; transform:translateY(-50%);
-    background:rgba(0,0,0,.45); border:none; color:#fff;
-    width:40px; height:40px; border-radius:999px;
-    display:grid; place-items:center; cursor:pointer;
+  .gallery { position: relative; overflow: hidden; border-radius: 12px; background:#000; }
+  .slider-track { display: flex; transition: transform .5s ease; }
+  .slide {
+    min-width: 100%;
+    user-select: none;
+    pointer-events: none;
+    height: 360px;              /* ajusta si quieres más alto */
+    object-fit: cover;
+    background:#111;
   }
-  .nav-btn:hover { background:rgba(0,0,0,.6); }
-  .nav-prev { left:12px; }
-  .nav-next { right:12px; }
+  .nav-btn {
+    position:absolute; top:50%; transform: translateY(-50%);
+    width:42px; height:42px; border:none; border-radius:999px;
+    display:grid; place-items:center; cursor:pointer;
+    background: rgba(17,24,39,.5); color:#fff; font-size:22px; font-weight:700;
+    backdrop-filter: blur(4px);
+  }
+  .nav-btn:hover { background: rgba(17,24,39,.75); }
+  .nav-prev { left:10px; }
+  .nav-next { right:10px; }
+  .nav-btn[disabled] { display:none; }
 
-  .dots { position:absolute; left:0; right:0; bottom:10px; display:flex; justify-content:center; gap:8px; }
-  .dot  { width:8px; height:8px; border-radius:999px; background:#ddd; opacity:.85; }
-  .dot.active { background:#6366F1; }
+  /* puntitos opcionales (puedes quitar si no los quieres) */
+  .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
+  .dot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,.5); cursor:pointer;
+  }
+  .dot.active { background:#fff; }
   </style>
 </head>
 <body>
