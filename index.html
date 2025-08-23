@@ -38,11 +38,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* === tus estilos originales === */
-    :root {
-      --primary:#6366F1; --primary-dark:#4F46E5;
-      --bg:#F9FAFB; --text:#111827;
-    }
+    :root { --primary:#6366F1; --primary-dark:#4F46E5; --bg:#F9FAFB; --text:#111827; }
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
     header{background:#fff;position:sticky;top:0;z-index:10;border-bottom:1px solid #eee}
@@ -65,7 +61,8 @@
     .card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
     .card img{width:100%;border-radius:12px;margin-bottom:12px}
     form{background:#fff;padding:32px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);max-width:600px;margin:40px auto 0}
-    input,textarea{width:100%;padding:14px;margin-bottom:16px;border:1px solid #ddd;border-radius:12px;font-size:1rem;font-family:inherit}
+    label{font-weight:600;display:block;margin-top:10px}
+    input,textarea{width:100%;padding:14px;margin:6px 0 14px;border:1px solid #ddd;border-radius:12px;font-size:1rem;font-family:inherit}
     input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px rgba(99,102,241,.2)}
     button{background:var(--primary);color:#fff;border:none;padding:14px 24px;border-radius:999px;font-weight:600;cursor:pointer;transition:.2s}
     button:hover{background:var(--primary-dark)}
@@ -110,9 +107,7 @@
   <!-- STOCK -->
   <section id="stock" aria-labelledby="stock-title">
     <h2 id="stock-title">Coches disponibles</h2>
-    <div class="grid" id="stock-grid" role="list">
-      <!-- Supabase insertará cards -->
-    </div>
+    <div class="grid" id="stock-grid" role="list"></div>
   </section>
 
   <!-- CONTACTO -->
@@ -131,6 +126,7 @@
       <!-- Hidden fields -->
       <input type="hidden" name="car_id" id="car_id">
       <input type="hidden" name="coche_interes" id="coche_interes">
+      <!-- honeypot -->
       <input type="text" name="company" autocomplete="off" tabindex="-1" style="position:absolute; left:-10000px;">
 
       <button type="submit" id="submit-btn">Enviar</button>
@@ -143,9 +139,117 @@
     © 2025 Tu Empresa · Importación y Exportación de Coches
   </footer>
 
-  <!-- JS igual que ya tenías -->
+  <!-- JS -->
   <script type="module">
-    /* ... tu código Supabase y notify-lead ... */
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // Credenciales (las tuyas actuales)
+    const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const grid = document.getElementById("stock-grid");
+
+    const cardHTML = (c) => {
+      const titulo  = `${c.marca ?? ""} ${c.modelo ?? ""} ${c.anio ?? ""}`.trim();
+      const imgSrc  = (Array.isArray(c.imagenes) && c.imagenes[0]) ? c.imagenes[0] : "https://picsum.photos/seed/placeholder/800/450";
+      const km      = (c.km ?? 0).toLocaleString("es-ES");
+      const resumen = [km && `${km} km`, c.combustible, c.caja].filter(Boolean).join(" · ");
+      const precio  = c.precio_objetivo ? `${Number(c.precio_objetivo).toLocaleString("es-ES")} €` : "Bajo pedido";
+
+      return `
+        <article class="card" role="listitem">
+          <a href="car.html?id=${c.id}" aria-label="Ver ${titulo}">
+            <img src="${imgSrc}" alt="${titulo}" loading="lazy">
+          </a>
+          <div style="padding:10px">
+            <b>${titulo}</b><br>
+            <span>${resumen}</span><br>
+            <span class="tag">${precio}</span>
+          </div>
+        </article>
+      `;
+    };
+
+    async function cargarCoches() {
+      if (!grid) return;
+      grid.innerHTML = "<p>Cargando coches…</p>";
+
+      const { data, error } = await supabase
+        .from("cars")
+        .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
+        .in("estado_publicacion", ["publicado", "disponible"])   // acepta ambos
+        .order("created_at", { ascending: false })
+        .limit(12);
+
+      console.log({ data, error, count: data?.length });
+
+      if (error) {
+        console.error(error);
+        grid.innerHTML = `<p style="color:#b91c1c">Error cargando coches.</p>`;
+        return;
+      }
+      if (!data || data.length === 0) {
+        grid.innerHTML = `<p style="color:#6B7280">No hay coches publicados ahora mismo.</p>`;
+        return;
+      }
+      grid.innerHTML = data.map(cardHTML).join("");
+    }
+
+    // Form lead
+    const form = document.getElementById("contact-form");
+    const btn = document.getElementById("submit-btn");
+    const statusEl = document.getElementById("form-status");
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      statusEl.textContent = "";
+      btn.disabled = true;
+
+      const fd = new FormData(form);
+      if (fd.get("company")) { btn.disabled = false; return; } // honeypot
+
+      const payload = {
+        nombre: (fd.get("nombre") || "").toString().trim(),
+        email: (fd.get("email") || "").toString().trim(),
+        telefono: (fd.get("telefono") || "").toString().trim() || null,
+        mensaje: (fd.get("mensaje") || "").toString().trim(),
+        coche_interes: (fd.get("coche_interes") || "").toString().trim() || null,
+        car_id: (fd.get("car_id") || "").toString().trim() || null,
+        page_url: location.href,
+        user_agent: navigator.userAgent
+      };
+
+      if (!payload.nombre || !payload.email || !payload.mensaje) {
+        statusEl.textContent = "Por favor, rellena nombre, email y mensaje.";
+        btn.disabled = false;
+        return;
+      }
+
+      const { error } = await supabase.from("leads").insert([payload]);
+      if (error) {
+        console.error("[Supabase INSERT error]", error);
+        statusEl.textContent = "Error al enviar (BBDD). Intenta de nuevo.";
+        btn.disabled = false;
+        return;
+      }
+
+      try {
+        await fetch("/api/notify-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn("Fallo al notificar por email (opcional):", err);
+      }
+
+      statusEl.textContent = "¡Gracias! Te contactaremos en breve.";
+      form.reset();
+      btn.disabled = false;
+    });
+
+    cargarCoches();
   </script>
 </body>
 </html>
