@@ -9,45 +9,51 @@
     body {font-family:Inter,Arial,sans-serif;margin:0;padding:0;background:#fafafa;color:#111;}
     .container {max-width:1000px;margin:0 auto;padding:20px;}
     h1 {font-size:2rem;margin-bottom:10px;}
-    .gallery {display:flex;overflow-x:auto;gap:10px;margin:20px 0;}
-    .gallery img {max-height:300px;border-radius:8px;flex-shrink:0;}
+
+    /* --- Carrusel --- */
+    .gallery {
+      position: relative;
+      display: block;                 /* importante para reemplazar el viejo display:flex */
+      overflow: hidden;
+      border-radius: 12px;
+      background:#000;
+      margin:20px 0;
+    }
+    .slider-track {
+      display: flex;
+      transition: transform .25s ease-out; /* velocidad del deslizamiento */
+    }
+    .slide {
+      min-width: 100%;
+      user-select: none;
+      pointer-events: none;
+      height: 360px;                  /* ajusta si quieres más alto */
+      object-fit: cover;
+      background:#111;
+    }
+    .nav-btn {
+      position:absolute; top:50%; transform: translateY(-50%);
+      width:42px; height:42px; border:none; border-radius:999px;
+      display:grid; place-items:center; cursor:pointer;
+      background: rgba(17,24,39,.5); color:#fff; font-size:22px; font-weight:700;
+      backdrop-filter: blur(4px);
+    }
+    .nav-btn:hover { background: rgba(17,24,39,.75); }
+    .nav-prev { left:10px; }
+    .nav-next { right:10px; }
+    .nav-btn[disabled] { display:none; }
+
+    .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
+    .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.5); cursor:pointer; }
+    .dot.active { background:#fff; }
+
+    /* Resto de secciones */
     .specs {background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);margin:20px 0;}
     .specs p {margin:6px 0;}
     iframe {width:100%;height:400px;border:none;border-radius:12px;margin:20px 0;}
     form {background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);}
     input,textarea {width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;}
     button {background:#6366F1;color:#fff;padding:12px 20px;border:none;border-radius:999px;cursor:pointer;font-weight:600;}
-	
-	/* --- Carrusel --- */
-  .gallery { position: relative; overflow: hidden; border-radius: 12px; background:#000; }
-  .slider-track { display: flex; transition: transform .5s ease; } //Tiempo que tarda en moverse de imagen a imagen.
-  .slide {
-    min-width: 100%;
-    user-select: none;
-    pointer-events: none;
-    height: 360px;              /* ajusta si quieres más alto */
-    object-fit: cover;
-    background:#111;
-  }
-  .nav-btn {
-    position:absolute; top:50%; transform: translateY(-50%);
-    width:42px; height:42px; border:none; border-radius:999px;
-    display:grid; place-items:center; cursor:pointer;
-    background: rgba(17,24,39,.5); color:#fff; font-size:22px; font-weight:700;
-    backdrop-filter: blur(4px);
-  }
-  .nav-btn:hover { background: rgba(17,24,39,.75); }
-  .nav-prev { left:10px; }
-  .nav-next { right:10px; }
-  .nav-btn[disabled] { display:none; }
-
-  /* puntitos opcionales (puedes quitar si no los quieres) */
-  .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
-  .dot {
-    width:8px; height:8px; border-radius:50%;
-    background:rgba(255,255,255,.5); cursor:pointer;
-  }
-  .dot.active { background:#fff; }
   </style>
 </head>
 <body>
@@ -67,197 +73,182 @@
     </form>
   </div>
 
-<script type="module">
-  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // USA EXACTAMENTE las mismas credenciales que en tu index.html
-  const SUPABASE_URL = "https://swzizabjkzllxwbrcsnp.supabase.co";
-  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA"; // <-- pon tu anon key
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    const SUPABASE_URL = "https://swzizabjkzllxwbrcsnp.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  const $ = (sel) => document.querySelector(sel);
+    const $ = (sel) => document.querySelector(sel);
 
-  const params = new URLSearchParams(location.search);
-  const carId = params.get('id');
+    const params = new URLSearchParams(location.search);
+    const carId = params.get('id');
 
-  async function loadCar() {
-    if (!carId) {
-      console.error('Falta ?id= en la URL');
-      document.body.innerHTML = '<p style="padding:24px">Falta el parámetro id.</p>';
-      return;
-    }
-
-    // Selecciona SOLO las columnas que necesitas y aplica el mismo filtro de RLS
-    const { data, error } = await supabase
-      .from('cars')
-      .select(`
-        id, marca, modelo, version, anio, km, combustible, caja,
-        imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion
-      `)
-      .eq('id', carId)
-      .eq('estado_publicacion', 'disponible')   // <-- IMPORTANTE si tu RLS lo exige
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      document.body.innerHTML = '<p style="padding:24px">Error cargando coche</p>';
-      return;
-    }
-    if (!data) {
-      console.warn('No se encontró el coche con id:', carId);
-      document.body.innerHTML = '<p style="padding:24px">Coche no encontrado</p>';
-      return;
-    }
-
-    // ---- Render ----
-    const title = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
-    $('#car-title')?.replaceWith(Object.assign(document.createElement('h1'), { id:'car-title', textContent:title }));
-
-    // Galería simple
-    const images = Array.isArray(data.imagenes) ? data.imagenes : [];
-const gallery = $('#car-gallery');
-
-if (!images.length) {
-  gallery.innerHTML = '<p style="padding:12px">Sin imágenes</p>';
-} else {
-  gallery.innerHTML = `
-    <div class="slider">
-      <div class="slider-track">
-        ${images.map(src => `<img class="slide" src="${src}" alt="${title}" loading="lazy">`).join('')}
-      </div>
-      <button class="nav-btn nav-prev" aria-label="Anterior">‹</button>
-      <button class="nav-btn nav-next" aria-label="Siguiente">›</button>
-      <div class="dots">${images.map((_,i)=>`<span class="dot" data-i="${i}"></span>`).join('')}</div>
-    </div>
-  `;
-
-  const track = gallery.querySelector('.slider-track');
-  const prevBtn = gallery.querySelector('.nav-prev');
-  const nextBtn = gallery.querySelector('.nav-next');
-  const dots    = [...gallery.querySelectorAll('.dot')];
-
-  let idx = 0;
-  const N = images.length;
-  const set = (i) => {
-    idx = (i + N) % N;
-    track.style.transform = `translateX(-${idx*100}%)`;
-    dots.forEach((d,k)=>d.classList.toggle('active', k===idx));
-  };
-
-  // botones
-  prevBtn.onclick = () => set(idx-1);
-  nextBtn.onclick = () => set(idx+1);
-
-  // ocultar flechas si solo hay 1
-  if (N <= 1) {
-    prevBtn.setAttribute('disabled', 'true');
-    nextBtn.setAttribute('disabled', 'true');
-  }
-
-  // dots
-  dots.forEach(d => d.onclick = () => set(+d.dataset.i));
-
-  // autoplay (pausa al hover)
-  let timer = null;
-  const start = () => { if (N>1) timer = setInterval(()=>set(idx+1), 4000); }; /* Tiempo que tarda en quedarse en las imágenes.*/
-  const stop  = () => { if (timer) clearInterval(timer); };
-  gallery.addEventListener('mouseenter', stop);
-  gallery.addEventListener('mouseleave', start);
-  start();
-
-  // swipe en móvil
-  let startX = 0, dx = 0, touching = false;
-  const onTouchStart = (e) => { touching = true; startX = (e.touches?.[0].clientX ?? e.clientX); stop(); };
-  const onTouchMove  = (e) => { if (!touching) return; const x = (e.touches?.[0].clientX ?? e.clientX); dx = x - startX; };
-  const onTouchEnd   = () => { if (!touching) return; if (Math.abs(dx) > 50) (dx<0 ? set(idx+1) : set(idx-1)); touching=false; dx=0; start(); };
-
-  gallery.addEventListener('touchstart', onTouchStart, {passive:true});
-  gallery.addEventListener('touchmove',  onTouchMove,  {passive:true});
-  gallery.addEventListener('touchend',   onTouchEnd);
-  // también con ratón
-  gallery.addEventListener('mousedown',  onTouchStart);
-  gallery.addEventListener('mousemove',  onTouchMove);
-  gallery.addEventListener('mouseup',    onTouchEnd);
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') set(idx - 1);
-    if (e.key === 'ArrowRight') set(idx + 1);
-  });
-
-  set(0);
-}
-
-    // Vídeo: si es YouTube normal, convierto a /embed/
-    const videoBox = $('#car-video');
-    if (data.video_url) {
-      let url = data.video_url.trim();
-      if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
-      if (url.endsWith('.mp4')) {
-        videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:12px;max-height:480px"></video>`;
-      } else {
-        videoBox.innerHTML = `<iframe src="${url}"
-          allowfullscreen
-          style="width:100%;height:420px;border:none;border-radius:12px"></iframe>`;
+    async function loadCar() {
+      if (!carId) {
+        document.body.innerHTML = '<p style="padding:24px">Falta el parámetro id.</p>';
+        return;
       }
-    } else {
-      videoBox.innerHTML = '';
+
+      const { data, error } = await supabase
+        .from('cars')
+        .select(`
+          id, marca, modelo, version, anio, km, combustible, caja,
+          imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion
+        `)
+        .eq('id', carId)
+        .eq('estado_publicacion', 'disponible')
+        .single();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        document.body.innerHTML = '<p style="padding:24px">Error cargando coche</p>';
+        return;
+      }
+      if (!data) {
+        document.body.innerHTML = '<p style="padding:24px">Coche no encontrado</p>';
+        return;
+      }
+
+      const title = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
+      $('#car-title')?.replaceWith(Object.assign(document.createElement('h1'), { id:'car-title', textContent:title }));
+
+      // Galería (carrusel)
+      const images = Array.isArray(data.imagenes) ? data.imagenes : [];
+      const gallery = $('#car-gallery');
+
+      if (!images.length) {
+        gallery.innerHTML = '<p style="padding:12px">Sin imágenes</p>';
+      } else {
+        gallery.innerHTML = `
+          <div class="slider">
+            <div class="slider-track">
+              ${images.map(src => `<img class="slide" src="${src}" alt="${title}" loading="lazy">`).join('')}
+            </div>
+            <button class="nav-btn nav-prev" aria-label="Anterior">‹</button>
+            <button class="nav-btn nav-next" aria-label="Siguiente">›</button>
+            <div class="dots">${images.map((_,i)=>`<span class="dot" data-i="${i}"></span>`).join('')}</div>
+          </div>
+        `;
+
+        const track  = gallery.querySelector('.slider-track');
+        const prevBtn= gallery.querySelector('.nav-prev');
+        const nextBtn= gallery.querySelector('.nav-next');
+        const dots   = [...gallery.querySelectorAll('.dot')];
+
+        let idx = 0;
+        const N = images.length;
+
+        const set = (i) => {
+          idx = (i + N) % N;
+          track.style.transform = `translateX(-${idx*100}%)`;
+          dots.forEach((d,k)=>d.classList.toggle('active', k===idx));
+        };
+
+        prevBtn.onclick = () => set(idx-1);
+        nextBtn.onclick = () => set(idx+1);
+
+        if (N <= 1) {
+          prevBtn.setAttribute('disabled','true');
+          nextBtn.setAttribute('disabled','true');
+        }
+
+        dots.forEach(d => d.onclick = () => set(+d.dataset.i));
+
+        // autoplay más rápido (2.5s)
+        let timer = null;
+        const start = () => { if (N>1) timer = setInterval(()=>set(idx+1), 2500); };
+        const stop  = () => { if (timer) clearInterval(timer); };
+        gallery.addEventListener('mouseenter', stop);
+        gallery.addEventListener('mouseleave', start);
+        start();
+
+        // swipe / drag
+        let startX = 0, dx = 0, touching = false;
+        const onTouchStart = (e) => { touching = true; startX = (e.touches?.[0].clientX ?? e.clientX); stop(); };
+        const onTouchMove  = (e) => { if (!touching) return; const x = (e.touches?.[0].clientX ?? e.clientX); dx = x - startX; };
+        const onTouchEnd   = () => { if (!touching) return; if (Math.abs(dx) > 50) (dx<0 ? set(idx+1) : set(idx-1)); touching=false; dx=0; start(); };
+
+        gallery.addEventListener('touchstart', onTouchStart, {passive:true});
+        gallery.addEventListener('touchmove',  onTouchMove,  {passive:true});
+        gallery.addEventListener('touchend',   onTouchEnd);
+        gallery.addEventListener('mousedown',  onTouchStart);
+        gallery.addEventListener('mousemove',  onTouchMove);
+        gallery.addEventListener('mouseup',    onTouchEnd);
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft')  set(idx - 1);
+          if (e.key === 'ArrowRight') set(idx + 1);
+        });
+
+        set(0);
+      }
+
+      // Vídeo
+      const videoBox = $('#car-video');
+      if (data.video_url) {
+        let url = data.video_url.trim();
+        if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
+        if (url.endsWith('.mp4')) {
+          videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:12px;max-height:480px"></video>`;
+        } else {
+          videoBox.innerHTML = `<iframe src="${url}" allowfullscreen style="width:100%;height:420px;border:none;border-radius:12px"></iframe>`;
+        }
+      } else {
+        videoBox.innerHTML = '';
+      }
+
+      // Specs
+      $('#car-specs').innerHTML = `
+        <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'} km</p>
+        <p><b>Combustible:</b> ${data.combustible ?? '-'}</p>
+        <p><b>Caja:</b> ${data.caja ?? '-'}</p>
+        <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES') + ' €' : 'Bajo pedido'}</p>
+        <p><b>Descripción:</b> ${data.descripcion || 'Sin descripción'}</p>
+        <p><b>Extras:</b> ${data.extras || 'N/A'}</p>
+      `;
+
+      // Form: coche de interés
+      const interes = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
+      const interesInput = document.getElementById('coche_interes');
+      if (interesInput) interesInput.value = interes;
     }
 
-    // Specs
-    $('#car-specs').innerHTML = `
-      <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'} km</p>
-      <p><b>Combustible:</b> ${data.combustible ?? '-'}</p>
-      <p><b>Caja:</b> ${data.caja ?? '-'}</p>
-      <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES') + ' €' : 'Bajo pedido'}</p>
-      <p><b>Descripción:</b> ${data.descripcion || 'Sin descripción'}</p>
-      <p><b>Extras:</b> ${data.extras || 'N/A'}</p>
-    `;
+    loadCar();
 
-    // Form: coche de interés
-    const interes = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
-    const interesInput = document.getElementById('coche_interes');
-    if (interesInput) interesInput.value = interes;
-  }
+    // Envío del formulario
+    const form = document.getElementById('contact-form');
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const payload = {
+        nombre: (fd.get('nombre')||'').toString().trim(),
+        email: (fd.get('email')||'').toString().trim(),
+        telefono: null,
+        mensaje: (fd.get('mensaje')||'').toString().trim(),
+        coche_interes: (fd.get('coche_interes')||'').toString().trim(),
+        page_url: location.href,
+        user_agent: navigator.userAgent
+      };
 
-  // Llama al loader
-  loadCar();
+      const statusEl = document.getElementById('form-status');
+      statusEl.textContent = 'Enviando…';
 
-  // ----- OPCIONAL: mismo envío de formulario que en index.html -----
-  const form = document.getElementById('contact-form');
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(form);
-    const payload = {
-      nombre: (fd.get('nombre')||'').toString().trim(),
-      email: (fd.get('email')||'').toString().trim(),
-      telefono: null,
-      mensaje: (fd.get('mensaje')||'').toString().trim(),
-      coche_interes: (fd.get('coche_interes')||'').toString().trim(),
-      page_url: location.href,
-      user_agent: navigator.userAgent
-    };
+      const { error } = await supabase.from('leads').insert([payload]);
+      if (error) { console.error(error); statusEl.textContent = 'Error guardando lead.'; return; }
 
-    const statusEl = document.getElementById('form-status');
-    statusEl.textContent = 'Enviando…';
+      try {
+        await fetch('/api/notify-lead', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(payload)
+        });
+      } catch {}
 
-    // Guarda lead
-    const { error } = await supabase.from('leads').insert([payload]);
-    if (error) { console.error(error); statusEl.textContent = 'Error guardando lead.'; return; }
-
-    // Notifica por email
-    try {
-      await fetch('/api/notify-lead', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(payload)
-      });
-    } catch {}
-
-    statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
-    form.reset();
-  });
-</script>
-
-</script>
+      statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
+      form.reset();
+    });
+  </script>
 </body>
 </html>
