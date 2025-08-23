@@ -138,7 +138,7 @@
       const { data, error } = await supabase
         .from('cars')
         .select(`id, marca, modelo, version, anio, km, combustible, caja,
-                 imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion, updated_at`)
+                 imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion`)
         .eq('id', carId)
         .in('estado_publicacion', ["publicado", "disponible"])
         .single();
