@@ -37,14 +37,13 @@
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- tu CSS aquí -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
   <!-- NAV -->
   <header role="banner">
     <nav role="navigation" aria-label="Menú principal">
-      <div><strong style="font-size:1.2rem;color:var(--primary)">Tu Empresa</strong></div>
+      <div><strong style="font-size:1.2rem;color:#6366F1">Tu Empresa</strong></div>
       <div>
         <a href="#servicios">Servicios</a>
         <a href="#stock">Stock</a>
@@ -61,10 +60,50 @@
       <a href="#contacto" class="btn primary">Solicitar información</a>
     </div>
     <div>
-      <img src="https://picsum.photos/seed/coche1/800/500" alt="Coche premium importado" />
+      <img src="https://picsum.photos/seed/coche1/800/500" alt="Coche premium importado con matrícula europea" loading="lazy" />
     </div>
   </section>
 
-  <!-- resto de secciones sin cambios -->
+  <!-- Servicios -->
+  <section id="servicios" aria-labelledby="servicios-title">
+    <h2 id="servicios-title">Servicios</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>Búsqueda a medida</h3>
+        <p>Encontramos el coche que quieres con historial verificado.</p>
+      </article>
+      <article class="card">
+        <h3>Transporte y aduanas</h3>
+        <p>Gestión logística completa hasta tu puerta.</p>
+      </article>
+      <article class="card">
+        <h3>Matriculación</h3>
+        <p>Nos encargamos de ITV y papeles en España.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Stock -->
+  <section id="stock" aria-labelledby="stock-title">
+    <h2 id="stock-title">Coches disponibles</h2>
+    <div id="stock-list"></div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" aria-labelledby="contacto-title">
+    <h2 id="contacto-title">Contacto</h2>
+    <form id="contact-form" aria-label="Formulario de contacto">
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Tu email" required>
+      <label for="telefono">Teléfono</label>
+      <input type="tel" id="telefono" name="telefono" placeholder="Opcional">
+      <label for="mensaje">Mensaje</label>
+      <textarea id="mensaje" name="mensaje" placeholder="Escribe tu mensaje aquí" rows="4" required></textarea>
+      <button type="submit">Enviar</button>
+      <p id="form-status" aria-live="polite"></p>
+    </form>
+  </section>
 </body>
 </html>
