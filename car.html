@@ -17,6 +17,37 @@
     form {background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);}
     input,textarea {width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;}
     button {background:#6366F1;color:#fff;padding:12px 20px;border:none;border-radius:999px;cursor:pointer;font-weight:600;}
+	
+	/* --- Carrusel --- */
+  .gallery { position: relative; overflow: hidden; border-radius: 12px; background:#000; }
+  .slider-track { display: flex; transition: transform .5s ease; }
+  .slide {
+    min-width: 100%;
+    user-select: none;
+    pointer-events: none;
+    height: 360px;              /* ajusta si quieres más alto */
+    object-fit: cover;
+    background:#111;
+  }
+  .nav-btn {
+    position:absolute; top:50%; transform: translateY(-50%);
+    width:42px; height:42px; border:none; border-radius:999px;
+    display:grid; place-items:center; cursor:pointer;
+    background: rgba(17,24,39,.5); color:#fff; font-size:22px; font-weight:700;
+    backdrop-filter: blur(4px);
+  }
+  .nav-btn:hover { background: rgba(17,24,39,.75); }
+  .nav-prev { left:10px; }
+  .nav-next { right:10px; }
+  .nav-btn[disabled] { display:none; }
+
+  /* puntitos opcionales (puedes quitar si no los quieres) */
+  .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
+  .dot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,.5); cursor:pointer;
+  }
+  .dot.active { background:#fff; }
   </style>
 </head>
 <body>
@@ -83,17 +114,78 @@
     $('#car-title')?.replaceWith(Object.assign(document.createElement('h1'), { id:'car-title', textContent:title }));
 
     // Galería simple
-    const gallery = $('#car-gallery');
-    gallery.innerHTML = '';
-    (data.imagenes || []).forEach(src => {
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = title;
-      img.style.maxHeight = '300px';
-      img.style.borderRadius = '8px';
-      img.style.flexShrink = '0';
-      gallery.appendChild(img);
-    });
+    const images = Array.isArray(data.imagenes) ? data.imagenes : [];
+const gallery = $('#car-gallery');
+
+if (!images.length) {
+  gallery.innerHTML = '<p style="padding:12px">Sin imágenes</p>';
+} else {
+  gallery.innerHTML = `
+    <div class="slider">
+      <div class="slider-track">
+        ${images.map(src => `<img class="slide" src="${src}" alt="${title}" loading="lazy">`).join('')}
+      </div>
+      <button class="nav-btn nav-prev" aria-label="Anterior">‹</button>
+      <button class="nav-btn nav-next" aria-label="Siguiente">›</button>
+      <div class="dots">${images.map((_,i)=>`<span class="dot" data-i="${i}"></span>`).join('')}</div>
+    </div>
+  `;
+
+  const track = gallery.querySelector('.slider-track');
+  const prevBtn = gallery.querySelector('.nav-prev');
+  const nextBtn = gallery.querySelector('.nav-next');
+  const dots    = [...gallery.querySelectorAll('.dot')];
+
+  let idx = 0;
+  const N = images.length;
+  const set = (i) => {
+    idx = (i + N) % N;
+    track.style.transform = `translateX(-${idx*100}%)`;
+    dots.forEach((d,k)=>d.classList.toggle('active', k===idx));
+  };
+
+  // botones
+  prevBtn.onclick = () => set(idx-1);
+  nextBtn.onclick = () => set(idx+1);
+
+  // ocultar flechas si solo hay 1
+  if (N <= 1) {
+    prevBtn.setAttribute('disabled', 'true');
+    nextBtn.setAttribute('disabled', 'true');
+  }
+
+  // dots
+  dots.forEach(d => d.onclick = () => set(+d.dataset.i));
+
+  // autoplay (pausa al hover)
+  let timer = null;
+  const start = () => { if (N>1) timer = setInterval(()=>set(idx+1), 4000); };
+  const stop  = () => { if (timer) clearInterval(timer); };
+  gallery.addEventListener('mouseenter', stop);
+  gallery.addEventListener('mouseleave', start);
+  start();
+
+  // swipe en móvil
+  let startX = 0, dx = 0, touching = false;
+  const onTouchStart = (e) => { touching = true; startX = (e.touches?.[0].clientX ?? e.clientX); stop(); };
+  const onTouchMove  = (e) => { if (!touching) return; const x = (e.touches?.[0].clientX ?? e.clientX); dx = x - startX; };
+  const onTouchEnd   = () => { if (!touching) return; if (Math.abs(dx) > 50) (dx<0 ? set(idx+1) : set(idx-1)); touching=false; dx=0; start(); };
+
+  gallery.addEventListener('touchstart', onTouchStart, {passive:true});
+  gallery.addEventListener('touchmove',  onTouchMove,  {passive:true});
+  gallery.addEventListener('touchend',   onTouchEnd);
+  // también con ratón
+  gallery.addEventListener('mousedown',  onTouchStart);
+  gallery.addEventListener('mousemove',  onTouchMove);
+  gallery.addEventListener('mouseup',    onTouchEnd);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') set(idx - 1);
+    if (e.key === 'ArrowRight') set(idx + 1);
+  });
+
+  set(0);
+}
 
     // Vídeo: si es YouTube normal, convierto a /embed/
     const videoBox = $('#car-video');

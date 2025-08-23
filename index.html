@@ -83,6 +83,37 @@
       background:#fff; border-top:1px solid #eee; text-align:center;
       padding:24px; margin-top:40px; font-size:.9rem; color:#555;
     }
+	
+	/* --- Carrusel --- */
+  .gallery { position: relative; overflow: hidden; border-radius: 12px; background:#000; }
+  .slider-track { display: flex; transition: transform .5s ease; }
+  .slide {
+    min-width: 100%;
+    user-select: none;
+    pointer-events: none;
+    height: 360px;              /* ajusta si quieres más alto */
+    object-fit: cover;
+    background:#111;
+  }
+  .nav-btn {
+    position:absolute; top:50%; transform: translateY(-50%);
+    width:42px; height:42px; border:none; border-radius:999px;
+    display:grid; place-items:center; cursor:pointer;
+    background: rgba(17,24,39,.5); color:#fff; font-size:22px; font-weight:700;
+    backdrop-filter: blur(4px);
+  }
+  .nav-btn:hover { background: rgba(17,24,39,.75); }
+  .nav-prev { left:10px; }
+  .nav-next { right:10px; }
+  .nav-btn[disabled] { display:none; }
+
+  /* puntitos opcionales (puedes quitar si no los quieres) */
+  .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
+  .dot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,.5); cursor:pointer;
+  }
+  .dot.active { background:#fff; }
   </style>
 </head>
 <body>
