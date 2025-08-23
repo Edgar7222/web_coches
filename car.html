@@ -75,6 +75,13 @@
     }
     .specs p{margin:8px 0;color:rgba(249,250,251,.9)}
     .specs b{color:#E5E7EB}
+    /* Descripción */
+    .specs h3{margin:14px 0 6px;color:#fff;font-size:1.05rem}
+    .specs .desc{
+      margin-top:10px;padding-top:8px;border-top:1px solid var(--border);
+      color:rgba(249,250,251,.92);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;
+    }
+
     iframe{width:100%;height:420px;border:none;border-radius:16px;box-shadow:var(--shadow);margin:22px 0}
 
     form h2{margin:0 0 8px;color:#fff}
@@ -95,7 +102,7 @@
     button:active{transform:translateY(1px)}
     #form-status{color:var(--muted);margin-top:6px}
 
-    /* === Sticky CTA móvil === */
+    /* Sticky CTA móvil */
     .sticky-cta{
       position:fixed; left:0; right:0; bottom:0; z-index:40;
       background:rgba(17,24,39,.9); backdrop-filter:blur(8px);
@@ -108,9 +115,8 @@
     .sticky-cta .cta-btn{background:var(--primary); color:#fff; padding:12px 18px; border-radius:999px; font-weight:700; text-decoration:none; display:inline-block}
     @media (max-width: 900px){
       .sticky-cta{display:flex}
-      body{padding-bottom:72px} /* margen para que no tape contenido */
+      body{padding-bottom:72px}
     }
-    /* cuando el form está visible, ocultamos barra */
     .sticky-cta.hidden{transform:translateY(110%); transition:transform .25s ease}
   </style>
 </head>
@@ -283,6 +289,34 @@
 
         set(0); start();
       }
+
+      /* ===== Vídeo (ocultar si no hay) ===== */
+      const videoBox = $('#car-video');
+      if (data.video_url && data.video_url.trim()) {
+        let url = data.video_url.trim();
+        if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
+        if (url.endsWith('.mp4')) {
+          videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:16px;max-height:480px;box-shadow:var(--shadow)"></video>`;
+        } else {
+          videoBox.innerHTML = `<iframe src="${url}" allowfullscreen loading="lazy"></iframe>`;
+        }
+        videoBox.style.display = '';
+      } else {
+        videoBox.innerHTML = '';
+        videoBox.style.display = 'none';
+      }
+
+      /* ===== Especificaciones + Descripción ===== */
+      const specsHTML = `
+        <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
+        <p><b>Combustible:</b> ${data.combustible ?? '-'}</p>
+        <p><b>Caja:</b> ${data.caja ?? '-'}</p>
+        <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+' €' : 'Bajo pedido'}</p>
+        ${data.extras ? `<p><b>Extras:</b> ${data.extras}</p>` : ''}
+        <h3>Descripción</h3>
+        <div class="desc">${(data.descripcion && data.descripcion.trim()) ? data.descripcion.trim() : 'Sin descripción'}</div>
+      `;
+      $('#car-specs').innerHTML = specsHTML;
 
       /* ===== Sticky CTA ===== */
       const bar = document.getElementById('sticky-cta');
