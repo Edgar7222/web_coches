@@ -31,16 +31,30 @@
       object-fit: cover;
       background:#111;
     }
-    .nav-btn {
-      position:absolute; top:50%; transform: translateY(-50%);
-      width:42px; height:42px; border:none; border-radius:999px;
-      display:grid; place-items:center; cursor:pointer;
-      background: rgba(17,24,39,.5); color:#fff; font-size:22px; font-weight:700;
-      backdrop-filter: blur(4px);
-    }
-    .nav-btn:hover { background: rgba(17,24,39,.75); }
-    .nav-prev { left:10px; }
-    .nav-next { right:10px; }
+    /* Flechas del carrusel (look más limpio) */
+.nav-btn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:48px;
+  height:48px;
+  border:none;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  background:rgba(0,0,0,.4);
+  color:#fff;
+  transition:all .3s ease;
+}
+.nav-btn:hover{
+  background:rgba(0,0,0,.7);
+  transform:translateY(-50%) scale(1.1);
+}
+.nav-prev{ left:15px; }
+.nav-next{ right:15px; }
+
     .nav-btn[disabled] { display:none; }
 
     .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
@@ -126,8 +140,17 @@
             <div class="slider-track">
               ${images.map(src => `<img class="slide" src="${src}" alt="${title}" loading="lazy">`).join('')}
             </div>
-            <button class="nav-btn nav-prev" aria-label="Anterior">‹</button>
-            <button class="nav-btn nav-next" aria-label="Siguiente">›</button>
+            <button class="nav-btn nav-prev" aria-label="Anterior">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+</button>
+
+<button class="nav-btn nav-next" aria-label="Siguiente">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+</button>
             <div class="dots">${images.map((_,i)=>`<span class="dot" data-i="${i}"></span>`).join('')}</div>
           </div>
         `;
