@@ -43,22 +43,87 @@
       --primary:#6366F1; --primary-dark:#4F46E5;
       --bg:#111827; --text:#F9FAFB; --muted:#9CA3AF;
       --card:#1F2937; --border:#374151; --shadow:0 8px 24px rgba(0,0,0,.35);
+
+      /* Header/drawer */
+      --nav-h:64px;
+      --nav-bg:#0f172a;
+      --nav-border:rgba(255,255,255,.06);
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
     a{color:inherit}
 
-    /* Header */
-    header{
-      background:rgba(17,24,39,.8);
-      position:sticky; top:0; z-index:10;
-      backdrop-filter:saturate(120%) blur(8px);
-      border-bottom:1px solid rgba(255,255,255,.06);
+    /* ===== Header + Drawer ===== */
+    .site-header{
+      position:sticky; top:0; z-index:50;
+      background:var(--nav-bg);
+      border-bottom:1px solid var(--nav-border);
+      backdrop-filter:blur(8px) saturate(120%);
     }
-    nav{max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
-    nav a{margin:0 12px;text-decoration:none;color:rgba(249,250,251,.92);font-weight:600;transition:.2s}
-    nav a:hover{color:#fff}
+    .nav-wrap{
+      max-width:1200px; margin:0 auto;
+      padding:12px 16px; height:var(--nav-h);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{
+      color:#fff; font-weight:800; letter-spacing:.2px; text-decoration:none;
+      font-size:clamp(1.05rem,2vw,1.2rem);
+    }
+    /* desktop */
+    .nav-desktop{ display:none; gap:16px; align-items:center; }
+    .nav-desktop a{
+      text-decoration:none; color:rgba(249,250,251,.92); font-weight:600;
+      padding:8px 10px; border-radius:10px; transition:background .2s,color .2s;
+    }
+    .nav-desktop a:hover{ color:#fff; background:rgba(255,255,255,.06); }
+
+    /* botón hamburguesa */
+    .nav-toggle{
+      width:44px; height:44px; border-radius:12px;
+      border:1px solid var(--nav-border); background:transparent; cursor:pointer;
+      display:grid; place-items:center; gap:4px; transition:background .2s,border .2s;
+    }
+    .nav-toggle:hover{ background:rgba(255,255,255,.04); }
+    .nav-toggle .bar{
+      width:20px; height:2px; background:#e5e7eb; display:block; border-radius:2px;
+      transition:transform .25s ease, opacity .25s ease;
+    }
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(1){ transform:translateY(6px) rotate(45deg);}
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(2){ opacity:0;}
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(3){ transform:translateY(-6px) rotate(-45deg);}
+
+    /* Drawer móvil */
+    .drawer{
+      position:fixed; inset:0; display:grid; grid-template-columns:1fr;
+      pointer-events:none; z-index:60;
+    }
+    .drawer-inner{
+      align-self:start; justify-self:end;
+      width:min(92vw,360px); height:100vh; background:#0b1220;
+      border-left:1px solid var(--nav-border);
+      box-shadow:0 10px 40px rgba(0,0,0,.6);
+      transform:translateX(100%); transition:transform .28s ease;
+    }
+    .drawer-nav{ display:flex; flex-direction:column; gap:10px; padding:18px; }
+    .drawer-link{
+      padding:12px 14px; border-radius:12px; text-decoration:none;
+      color:var(--text); font-weight:600; background:transparent; border:1px solid transparent;
+    }
+    .drawer-link:hover{ background:rgba(255,255,255,.06); border-color:var(--nav-border); color:#fff; }
+    .drawer-backdrop{
+      position:fixed; inset:0; background:rgba(2,6,23,.45);
+      opacity:0; transition:opacity .28s ease;
+    }
+    .drawer.open{ pointer-events:auto; }
+    .drawer.open .drawer-inner{ transform:translateX(0); }
+    .drawer.open .drawer-backdrop{ opacity:1; }
+    body.nav-open{ overflow:hidden; }
+
+    @media (min-width:900px){
+      .nav-toggle{ display:none; }
+      .nav-desktop{ display:flex; }
+    }
 
     /* Botones */
     .btn{display:inline-block;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:600;transition:.2s}
@@ -135,21 +200,39 @@
     .fab svg{width:18px;height:18px;display:block}
     @media (max-width: 900px){
       .fab{display:flex}
-      body{padding-bottom:76px} /* margen para que no tape contenido */
+      body{padding-bottom:76px}
     }
   </style>
 </head>
 <body>
-  <!-- NAV -->
-  <header>
-    <nav role="navigation" aria-label="Menú principal">
-      <div><strong style="font-size:1.2rem;color:#fff">Tu Empresa</strong></div>
-      <div>
+
+  <!-- ===== NAV con hamburguesa ===== -->
+  <header class="site-header" role="banner">
+    <div class="nav-wrap">
+      <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
+
+      <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-controls="mobile-drawer" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+
+      <nav class="nav-desktop" aria-label="Menú principal">
         <a href="#servicios">Servicios</a>
         <a href="#stock">Stock</a>
         <a href="#contacto" class="btn primary">Contacto</a>
+      </nav>
+    </div>
+
+    <!-- Drawer móvil -->
+    <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
+      <div class="drawer-inner">
+        <nav class="drawer-nav">
+          <a href="#servicios" class="drawer-link">Servicios</a>
+          <a href="#stock" class="drawer-link">Stock</a>
+          <a href="#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
+        </nav>
       </div>
-    </nav>
+      <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
+    </div>
   </header>
 
   <!-- HERO -->
@@ -211,17 +294,13 @@
 
   <!-- FAB móvil -->
   <div class="fab" aria-label="Acciones rápidas">
-    <!-- Contacto (ancla) -->
     <a href="#contacto" aria-label="Ir a contacto">
-      <!-- icono mensaje -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z" stroke-linejoin="round" stroke-linecap="round"/>
       </svg>
       Contacto
     </a>
-    <!-- WhatsApp (cambia el número) -->
     <a class="secondary" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20coches%20premium" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">
-      <!-- icono WhatsApp -->
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.02 0C5.4.02.03 5.38 0 12a11.9 11.9 0 0 0 1.62 6L0 24l6.17-1.62A11.96 11.96 0 0 0 12 24h.01C18.63 24 24 18.64 24 12.02c0-3.18-1.24-6.18-3.48-8.54ZM12 22a9.9 9.9 0 0 1-5.05-1.39l-.36-.21-3.66.96.98-3.56-.23-.37A10 10 0 1 1 12 22Zm5.54-7.46c-.3-.15-1.77-.87-2.05-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.95 1.17-.17.2-.35.22-.65.07-1.77-.88-2.93-1.57-4.09-3.57-.31-.53.31-.49.88-1.63.1-.2.05-.37-.03-.52-.08-.15-.68-1.63-.93-2.23-.24-.58-.5-.5-.68-.5-.17 0-.37-.02-.57-.02s-.52.07-.79.37c-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.07 4.49.71.31 1.27.5 1.7.64.71.22 1.36.19 1.88.12.57-.08 1.77-.72 2.02-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35Z"/></svg>
       WhatsApp
     </a>
@@ -231,7 +310,6 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // Credenciales (las tuyas actuales)
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -334,6 +412,54 @@
     });
 
     cargarCoches();
+  </script>
+
+  <!-- JS del menú hamburguesa -->
+  <script>
+    (() => {
+      const toggleBtn = document.getElementById('nav-toggle');
+      const drawer    = document.getElementById('mobile-drawer');
+      const backdrop  = drawer?.querySelector('.drawer-backdrop');
+      if (!toggleBtn || !drawer) return;
+
+      const focusableSel = [
+        'a[href]','button:not([disabled])','input','select','textarea','[tabindex]:not([tabindex="-1"])'
+      ].join(',');
+      let lastFocused = null;
+
+      const open = () => {
+        lastFocused = document.activeElement;
+        drawer.classList.add('open');
+        document.body.classList.add('nav-open');
+        toggleBtn.setAttribute('aria-expanded','true');
+        drawer.querySelector(focusableSel)?.focus({preventScroll:true});
+      };
+      const close = () => {
+        drawer.classList.remove('open');
+        document.body.classList.remove('nav-open');
+        toggleBtn.setAttribute('aria-expanded','false');
+        lastFocused?.focus?.({preventScroll:true});
+      };
+      const isOpen = () => drawer.classList.contains('open');
+
+      toggleBtn.addEventListener('click', () => isOpen() ? close() : open());
+      backdrop?.addEventListener('click', close);
+      window.addEventListener('keydown', (e) => {
+        if (!isOpen()) return;
+        if (e.key === 'Escape') { e.preventDefault(); close(); }
+        if (e.key === 'Tab') {
+          const f = [...drawer.querySelectorAll(focusableSel)];
+          if (!f.length) return;
+          const first = f[0], last = f[f.length-1];
+          if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        }
+      });
+      drawer.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if (a) close();
+      });
+    })();
   </script>
 </body>
 </html>
