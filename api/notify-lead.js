@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   const TO = process.env.LEADS_TO_EMAIL;     // Tu correo de recepción
-  const FROM = process.env.LEADS_FROM_EMAIL || 'Leads <onboarding@resend.dev>';
+  const FROM = process.env.LEADS_FROM_EMAIL || 'Leads <onboarding@resend.dev>'; //Aplicando un cambio manual al notify.js.
 
   if (!RESEND_API_KEY || !TO) {
     return res.status(500).json({ error: 'Faltan variables de entorno (RESEND_API_KEY, LEADS_TO_EMAIL).' });
