@@ -182,27 +182,22 @@
     }
 
     grid.innerHTML =
-      (data || [])
-        .map(c => `
-        <div class="card">
+  (data || [])
+    .map(c => `
+      <div class="card">
+        <a href="car.html?id=${c.id}" target="_blank">
           <img src="${(c.imagenes?.[0] || 'https://picsum.photos/seed/placeholder/800/450')}" alt="${c.marca} ${c.modelo}">
-          <div style="padding:10px">
-            <b>${c.marca} ${c.modelo}${c.version ? ' ' + c.version : ''} ${c.anio || ''}</b><br>
-            <span>${(c.km ?? 0).toLocaleString('es-ES')} km · ${c.combustible || ''}${c.caja ? ' · ' + c.caja : ''}</span><br>
-            ${c.precio_objetivo
-              ? `<span class="tag">${Number(c.precio_objetivo).toLocaleString('es-ES')} €</span>`
-              : `<span class="tag">Bajo pedido</span>`}
-            <div style="margin-top:8px">
-              <a class="btn solicitar-oferta" href="#contacto"
-                 data-car-id="${c.id}"
-                 data-car-name="${c.marca} ${c.modelo}${c.version ? ' ' + c.version : ''} ${c.anio || ''}">
-                Solicitar oferta
-              </a>
-            </div>
-          </div>
+        </a>
+        <div style="padding:10px">
+          <b>${c.marca} ${c.modelo} ${c.anio || ''}</b><br>
+          <span>${(c.km ?? 0).toLocaleString('es-ES')} km · ${c.combustible || ''}${c.caja ? ' · ' + c.caja : ''}</span><br>
+          ${c.precio_objetivo
+            ? `<span class="tag">${Number(c.precio_objetivo).toLocaleString('es-ES')} €</span>`
+            : `<span class="tag">Bajo pedido</span>`}
         </div>
-      `)
-        .join('') || "<p>Sin coches publicados aún.</p>";
+      </div>
+    `)
+    .join('');
   }
 
   /* ==================================================

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Detalle del vehículo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {font-family:Inter,Arial,sans-serif;margin:0;padding:0;background:#fafafa;color:#111;}
+    .container {max-width:1000px;margin:0 auto;padding:20px;}
+    h1 {font-size:2rem;margin-bottom:10px;}
+    .gallery {display:flex;overflow-x:auto;gap:10px;margin:20px 0;}
+    .gallery img {max-height:300px;border-radius:8px;flex-shrink:0;}
+    .specs {background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);margin:20px 0;}
+    .specs p {margin:6px 0;}
+    iframe {width:100%;height:400px;border:none;border-radius:12px;margin:20px 0;}
+    form {background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);}
+    input,textarea {width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;}
+    button {background:#6366F1;color:#fff;padding:12px 20px;border:none;border-radius:999px;cursor:pointer;font-weight:600;}
+  </style>
+</head>
+<body>
+  <div class="container" id="car-container">
+    <h1 id="car-title">Cargando...</h1>
+    <div class="gallery" id="car-gallery"></div>
+    <div id="car-video"></div>
+    <div class="specs" id="car-specs"></div>
+    <form id="contact-form">
+      <h2>Solicita información</h2>
+      <input type="text" name="nombre" placeholder="Nombre" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <textarea name="mensaje" placeholder="Mensaje" required></textarea>
+      <input type="hidden" name="coche_interes" id="coche_interes">
+      <button type="submit">Enviar</button>
+      <p id="form-status"></p>
+    </form>
+  </div>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+  const SUPABASE_URL = "https://swzizabjkzllxwbrcsnp.supabase.co";
+  const SUPABASE_ANON = "TU_ANON_KEY"; 
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // Obtener ID del coche desde la URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const carId = urlParams.get("id");
+
+  async function loadCar() {
+    const { data, error } = await supabase.from("cars").select("*").eq("id", carId).single();
+    if (error) { document.getElementById("car-container").innerHTML = "Error cargando coche"; return; }
+
+    // Título
+    document.getElementById("car-title").textContent = `${data.marca} ${data.modelo} ${data.anio}`;
+
+    // Galería
+    const gallery = document.getElementById("car-gallery");
+    (data.imagenes || []).forEach(img => {
+      const el = document.createElement("img");
+      el.src = img;
+      gallery.appendChild(el);
+    });
+
+    // Vídeo
+    if (data.video_url) {
+      document.getElementById("car-video").innerHTML = `<iframe src="${data.video_url}" allowfullscreen></iframe>`;
+    }
+
+    // Especificaciones
+    document.getElementById("car-specs").innerHTML = `
+      <p><b>Kilómetros:</b> ${data.km?.toLocaleString("es-ES")} km</p>
+      <p><b>Combustible:</b> ${data.combustible}</p>
+      <p><b>Caja:</b> ${data.caja}</p>
+      <p><b>Precio:</b> ${data.precio_objetivo?.toLocaleString("es-ES")} €</p>
+      <p><b>Descripción:</b> ${data.descripcion || "Sin descripción"}</p>
+      <p><b>Extras:</b> ${data.extras || "N/A"}</p>
+    `;
+
+    // Prellenar formulario con coche de interés
+    document.getElementById("coche_interes").value = `${data.marca} ${data.modelo} ${data.anio}`;
+  }
+
+  loadCar();
+</script>
+</body>
+</html>
