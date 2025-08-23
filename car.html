@@ -38,49 +38,134 @@
 
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  // USA EXACTAMENTE las mismas credenciales que en tu index.html
   const SUPABASE_URL = "https://swzizabjkzllxwbrcsnp.supabase.co";
-  const SUPABASE_ANON = "TU_ANON_KEY"; 
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA"; // <-- pon tu anon key
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // Obtener ID del coche desde la URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const carId = urlParams.get("id");
+  const $ = (sel) => document.querySelector(sel);
+
+  const params = new URLSearchParams(location.search);
+  const carId = params.get('id');
 
   async function loadCar() {
-    const { data, error } = await supabase.from("cars").select("*").eq("id", carId).single();
-    if (error) { document.getElementById("car-container").innerHTML = "Error cargando coche"; return; }
-
-    // Título
-    document.getElementById("car-title").textContent = `${data.marca} ${data.modelo} ${data.anio}`;
-
-    // Galería
-    const gallery = document.getElementById("car-gallery");
-    (data.imagenes || []).forEach(img => {
-      const el = document.createElement("img");
-      el.src = img;
-      gallery.appendChild(el);
-    });
-
-    // Vídeo
-    if (data.video_url) {
-      document.getElementById("car-video").innerHTML = `<iframe src="${data.video_url}" allowfullscreen></iframe>`;
+    if (!carId) {
+      console.error('Falta ?id= en la URL');
+      document.body.innerHTML = '<p style="padding:24px">Falta el parámetro id.</p>';
+      return;
     }
 
-    // Especificaciones
-    document.getElementById("car-specs").innerHTML = `
-      <p><b>Kilómetros:</b> ${data.km?.toLocaleString("es-ES")} km</p>
-      <p><b>Combustible:</b> ${data.combustible}</p>
-      <p><b>Caja:</b> ${data.caja}</p>
-      <p><b>Precio:</b> ${data.precio_objetivo?.toLocaleString("es-ES")} €</p>
-      <p><b>Descripción:</b> ${data.descripcion || "Sin descripción"}</p>
-      <p><b>Extras:</b> ${data.extras || "N/A"}</p>
+    // Selecciona SOLO las columnas que necesitas y aplica el mismo filtro de RLS
+    const { data, error } = await supabase
+      .from('cars')
+      .select(`
+        id, marca, modelo, version, anio, km, combustible, caja,
+        imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion
+      `)
+      .eq('id', carId)
+      .eq('estado_publicacion', 'disponible')   // <-- IMPORTANTE si tu RLS lo exige
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      document.body.innerHTML = '<p style="padding:24px">Error cargando coche</p>';
+      return;
+    }
+    if (!data) {
+      console.warn('No se encontró el coche con id:', carId);
+      document.body.innerHTML = '<p style="padding:24px">Coche no encontrado</p>';
+      return;
+    }
+
+    // ---- Render ----
+    const title = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
+    $('#car-title')?.replaceWith(Object.assign(document.createElement('h1'), { id:'car-title', textContent:title }));
+
+    // Galería simple
+    const gallery = $('#car-gallery');
+    gallery.innerHTML = '';
+    (data.imagenes || []).forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = title;
+      img.style.maxHeight = '300px';
+      img.style.borderRadius = '8px';
+      img.style.flexShrink = '0';
+      gallery.appendChild(img);
+    });
+
+    // Vídeo: si es YouTube normal, convierto a /embed/
+    const videoBox = $('#car-video');
+    if (data.video_url) {
+      let url = data.video_url.trim();
+      if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
+      if (url.endsWith('.mp4')) {
+        videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:12px;max-height:480px"></video>`;
+      } else {
+        videoBox.innerHTML = `<iframe src="${url}"
+          allowfullscreen
+          style="width:100%;height:420px;border:none;border-radius:12px"></iframe>`;
+      }
+    } else {
+      videoBox.innerHTML = '';
+    }
+
+    // Specs
+    $('#car-specs').innerHTML = `
+      <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'} km</p>
+      <p><b>Combustible:</b> ${data.combustible ?? '-'}</p>
+      <p><b>Caja:</b> ${data.caja ?? '-'}</p>
+      <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES') + ' €' : 'Bajo pedido'}</p>
+      <p><b>Descripción:</b> ${data.descripcion || 'Sin descripción'}</p>
+      <p><b>Extras:</b> ${data.extras || 'N/A'}</p>
     `;
 
-    // Prellenar formulario con coche de interés
-    document.getElementById("coche_interes").value = `${data.marca} ${data.modelo} ${data.anio}`;
+    // Form: coche de interés
+    const interes = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
+    const interesInput = document.getElementById('coche_interes');
+    if (interesInput) interesInput.value = interes;
   }
 
+  // Llama al loader
   loadCar();
+
+  // ----- OPCIONAL: mismo envío de formulario que en index.html -----
+  const form = document.getElementById('contact-form');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const payload = {
+      nombre: (fd.get('nombre')||'').toString().trim(),
+      email: (fd.get('email')||'').toString().trim(),
+      telefono: null,
+      mensaje: (fd.get('mensaje')||'').toString().trim(),
+      coche_interes: (fd.get('coche_interes')||'').toString().trim(),
+      page_url: location.href,
+      user_agent: navigator.userAgent
+    };
+
+    const statusEl = document.getElementById('form-status');
+    statusEl.textContent = 'Enviando…';
+
+    // Guarda lead
+    const { error } = await supabase.from('leads').insert([payload]);
+    if (error) { console.error(error); statusEl.textContent = 'Error guardando lead.'; return; }
+
+    // Notifica por email
+    try {
+      await fetch('/api/notify-lead', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+    } catch {}
+
+    statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
+    form.reset();
+  });
+</script>
+
 </script>
 </body>
 </html>
