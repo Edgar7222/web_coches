@@ -20,7 +20,7 @@
 	
 	/* --- Carrusel --- */
   .gallery { position: relative; overflow: hidden; border-radius: 12px; background:#000; }
-  .slider-track { display: flex; transition: transform .25s ease-out; }
+  .slider-track { display: flex; transition: transform .25s ease-out; } //Para cambiar la transición en la que se pasan las imágenes.
   .slide {
     min-width: 100%;
     user-select: none;
@@ -159,7 +159,7 @@ if (!images.length) {
 
   // autoplay (pausa al hover)
   let timer = null;
-  const start = () => { if (N>1) timer = setInterval(()=>set(idx+1), 2500); };
+  const start = () => { if (N>1) timer = setInterval(()=>set(idx+1), 3000); }; //Tiempo que tarda en pasar entre imágenes.
   const stop  = () => { if (timer) clearInterval(timer); };
   gallery.addEventListener('mouseenter', stop);
   gallery.addEventListener('mouseleave', start);
