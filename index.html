@@ -75,12 +75,24 @@
 
   <section id="contacto">
     <h2>Contacto</h2>
-    <form>
-      <input type="text" name="nombre" placeholder="Nombre" required><br><br>
-      <input type="email" name="email" placeholder="Email" required><br><br>
-      <textarea name="mensaje" placeholder="Mensaje" rows="5"></textarea><br><br>
-      <button type="submit" class="btn primary">Enviar</button>
-    </form>
+	
+    <form id="contact-form">
+    <input type="text" name="nombre" placeholder="Nombre" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="tel" name="telefono" placeholder="Teléfono (opcional)">
+    <textarea name="mensaje" placeholder="Mensaje" required></textarea>
+
+    <!-- Campos ocultos para vincular a un coche concreto (opcionales) -->
+    <input type="hidden" name="car_id" id="car_id">
+    <input type="hidden" name="coche_interes" id="coche_interes">
+
+    <!-- Honeypot anti-spam (oculto a humanos) -->
+    <input type="text" name="company" autocomplete="off" tabindex="-1" style="position:absolute; left:-10000px;">
+
+    <button type="submit" id="submit-btn">Enviar</button>
+    <p id="form-status" aria-live="polite"></p>
+  </form>
+  
   </section>
 
   <footer>
@@ -93,13 +105,16 @@
   const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
+  /* ========================
+     STOCK: cargar tarjetas
+  ========================= */
   async function cargarCoches() {
     const grid = document.querySelector("#stock .grid");
     if (!grid) return;
 
     const { data, error } = await supabase
       .from("cars")
-      .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo")
+      .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at")
       .eq("estado_publicacion", "disponible")
       .order("created_at", { ascending: false })
       .limit(12);
@@ -110,27 +125,105 @@
       return;
     }
 
-    grid.innerHTML = (data || []).map(c => `
-      <div class="card">
-        <img src="${(c.imagenes?.[0] || 'https://picsum.photos/seed/placeholder/800/450')}" alt="${c.marca} ${c.modelo}">
-        <div style="padding:10px">
-          <b>${c.marca} ${c.modelo}${c.version ? ' ' + c.version : ''} ${c.anio || ''}</b><br>
-          <span>${(c.km ?? 0).toLocaleString('es-ES')} km · ${c.combustible || ''}${c.caja ? ' · ' + c.caja : ''}</span><br>
-          ${c.precio_objetivo ? `<span class="tag">${Number(c.precio_objetivo).toLocaleString('es-ES')} €</span>` : `<span class="tag">Bajo pedido</span>`}
-          <div style="margin-top:8px"><a class="btn" href="#contacto" onclick="selCar('${c.id}','${c.marca} ${c.modelo}')">Solicitar oferta</a></div>
+    grid.innerHTML =
+      (data || [])
+        .map(c => `
+        <div class="card">
+          <img src="${(c.imagenes?.[0] || 'https://picsum.photos/seed/placeholder/800/450')}" alt="${c.marca} ${c.modelo}">
+          <div style="padding:10px">
+            <b>${c.marca} ${c.modelo}${c.version ? ' ' + c.version : ''} ${c.anio || ''}</b><br>
+            <span>${(c.km ?? 0).toLocaleString('es-ES')} km · ${c.combustible || ''}${c.caja ? ' · ' + c.caja : ''}</span><br>
+            ${c.precio_objetivo
+              ? `<span class="tag">${Number(c.precio_objetivo).toLocaleString('es-ES')} €</span>`
+              : `<span class="tag">Bajo pedido</span>`}
+            <div style="margin-top:8px">
+              <a class="btn solicitar-oferta" href="#contacto"
+                 data-car-id="${c.id}"
+                 data-car-name="${c.marca} ${c.modelo}${c.version ? ' ' + c.version : ''} ${c.anio || ''}">
+                Solicitar oferta
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
-    `).join('') || "<p>Sin coches publicados aún.</p>";
+      `)
+        .join('') || "<p>Sin coches publicados aún.</p>";
   }
 
-  window.selCar = (id, name) => {
-    const f = document.querySelector('#contacto form');
-    if (!f) return;
-    f.dataset.car_id = id;
-    const ta = f.querySelector('textarea[name=mensaje]');
-    if (ta && !ta.value.includes('[Interés]')) ta.value = `[Interés] ${name}\n` + (ta.value || '');
-  };
+  /* ==================================================
+     Al hacer clic en “Solicitar oferta” precargamos el form
+  =================================================== */
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('.solicitar-oferta');
+    if (!link) return;
+    const carIdInput   = document.getElementById('car_id');
+    const carNameInput = document.getElementById('coche_interes');
+    if (carIdInput)   carIdInput.value   = link.dataset.carId || '';
+    if (carNameInput) carNameInput.value = link.dataset.carName || '';
+  });
 
+  /* =========================================
+     FORM: insertar lead + notificar por email
+  ========================================== */
+  const form = document.getElementById('contact-form');
+  const btn = document.getElementById('submit-btn');
+  const statusEl = document.getElementById('form-status');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = '';
+    btn.disabled = true;
+
+    const fd = new FormData(form);
+
+    // honeypot: si se rellena, cancelamos (bot)
+    if (fd.get('company')) { btn.disabled = false; return; }
+
+    const payload = {
+      nombre: (fd.get('nombre') || '').toString().trim(),
+      email: (fd.get('email') || '').toString().trim(),
+      telefono: (fd.get('telefono') || '').toString().trim() || null,
+      mensaje: (fd.get('mensaje') || '').toString().trim(),
+      coche_interes: (fd.get('coche_interes') || '').toString().trim() || null,
+      car_id: (fd.get('car_id') || '').toString().trim() || null,
+      page_url: location.href,
+      user_agent: navigator.userAgent
+    };
+
+    if (!payload.nombre || !payload.email || !payload.mensaje) {
+      statusEl.textContent = 'Por favor, rellena nombre, email y mensaje.';
+      btn.disabled = false;
+      return;
+    }
+
+    // 1) Insertar en Supabase
+    const { error } = await supabase.from('leads').insert([payload]);
+    if (error) {
+      console.error('[Supabase INSERT error]', error);
+      statusEl.textContent = 'Error al enviar (BBDD). Intenta de nuevo.';
+      btn.disabled = false;
+      return;
+    }
+
+    // 2) Notificación por email (best effort)
+    try {
+      await fetch('/api/notify-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn('Fallo al notificar por email (opcional):', err);
+    }
+
+    // 3) Feedback
+    statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
+    form.reset();
+    document.getElementById('car_id')?.setAttribute('value','');
+    document.getElementById('coche_interes')?.setAttribute('value','');
+    btn.disabled = false;
+  });
+
+  // init
   cargarCoches();
 </script>
 
