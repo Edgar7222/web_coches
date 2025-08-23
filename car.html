@@ -33,29 +33,32 @@
     }
     /* Flechas del carrusel (look más limpio) */
 /* Flechas del carrusel */
+/* Flechas del carrusel */
 .nav-btn{
   position:absolute; top:50%; transform:translateY(-50%);
-  width:48px; height:48px; border:none; border-radius:50%;
+  width:54px; height:54px;   /* botón un poco más grande */
+  border:none; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
-  cursor:pointer; background:rgba(0,0,0,.4);
-  transition:all .3s ease; z-index:2;   /* asegúralo por encima de la imagen */
+  cursor:pointer; background:rgba(0,0,0,.45);
+  transition:all .3s ease; z-index:2;
 }
-.nav-btn:hover{ background:rgba(0,0,0,.7); transform:translateY(-50%) scale(1.06); }
-.nav-prev{ left:15px; }
-.nav-next{ right:15px; }
+.nav-btn:hover{ background:rgba(0,0,0,.75); transform:translateY(-50%) scale(1.1); }
+.nav-prev{ left:18px; }
+.nav-next{ right:18px; }
 
-/* El SVG interior (asegura tamaño y color) */
+/* El SVG interior (más grande y blanco) */
 .nav-btn svg{
   display:block;
-  width:22px; height:22px;
-  stroke:#fff; stroke-width:2; fill:none; 
+  width:28px; height:28px;  /* tamaño icono ↑ */
+  stroke:#fff; stroke-width:2.5; fill:none; 
 }
 
 /* Fallback: si no hay SVG, usa el texto del data-atributo */
 .nav-btn:empty::before{
   content: attr(data-icon);
-  color:#fff; font-size:22px; line-height:1;
+  color:#fff; font-size:28px; line-height:1;
 }
+
 
 
     .dots { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
