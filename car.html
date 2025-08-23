@@ -118,7 +118,7 @@
         .select(`id, marca, modelo, version, anio, km, combustible, caja,
                  imagenes, precio_objetivo, descripcion, extras, video_url, estado_publicacion`)
         .eq('id', carId)
-        .eq('estado_publicacion', 'disponible')
+        .in('estado_publicacion', ["publicado", "disponible"])
         .single();
 
       if (error || !data) {
