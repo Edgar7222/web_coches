@@ -5,28 +5,92 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tu Empresa — Importación y Exportación de Coches</title>
   <meta name="description" content="Importamos y exportamos coches a medida. Inspección, logística, matriculación y garantía. Pide presupuesto sin compromiso." />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body {margin:0;font-family:Inter,Arial,sans-serif;background:#fafafa;color:#111;}
-    header {background:#fff;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10;}
-    nav {max-width:1100px;margin:0 auto;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;}
-    nav a {margin:0 10px;text-decoration:none;color:#111;font-weight:600;}
-    .btn {display:inline-block;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:700;}
-    .btn.primary {background:#111;color:#fff;}
-    section {max-width:1100px;margin:0 auto;padding:60px 20px;}
-    .hero {display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;}
-    @media (max-width:800px){.hero{grid-template-columns:1fr;}}
-    .hero img {width:100%;border-radius:10px;}
-    .grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
-    .card {background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;}
-    footer {background:#fff;border-top:1px solid #eee;text-align:center;padding:20px;}
+    :root {
+      --primary: #6366F1; /* Indigo estilo Opal */
+      --primary-dark: #4F46E5;
+      --bg: #F9FAFB;
+      --text: #111827;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:Inter,Arial,sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.6;
+    }
+    header {
+      background:#fff; position:sticky; top:0; z-index:10;
+      border-bottom:1px solid #eee;
+    }
+    nav {
+      max-width:1200px; margin:0 auto; padding:16px 24px;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    nav a {
+      margin:0 12px; text-decoration:none; color:var(--text);
+      font-weight:600; transition:.2s;
+    }
+    nav a:hover { color:var(--primary); }
+    .btn {
+      display:inline-block; padding:12px 22px; border-radius:999px;
+      text-decoration:none; font-weight:600; transition:.2s;
+    }
+    .btn.primary { background:var(--primary); color:#fff; }
+    .btn.primary:hover { background:var(--primary-dark); }
+    section { max-width:1200px; margin:0 auto; padding:80px 24px; }
+    h1,h2 { margin-bottom:16px; font-weight:700; }
+    h1 { font-size:2.5rem; line-height:1.2; }
+    h2 { font-size:1.8rem; text-align:center; }
+    p { margin-bottom:12px; }
+    /* Hero */
+    .hero { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; }
+    .hero img { width:100%; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+    @media(max-width:900px){ .hero{grid-template-columns:1fr; text-align:center;} }
+    /* Grid Cards */
+    .grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:24px; margin-top:40px;
+    }
+    .card {
+      background:#fff; border-radius:16px; padding:24px;
+      box-shadow:0 4px 12px rgba(0,0,0,.06);
+      transition:.2s;
+    }
+    .card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,.1); }
+    .card img { width:100%; border-radius:12px; margin-bottom:12px; }
+    /* Contact */
+    form {
+      background:#fff; padding:32px; border-radius:16px;
+      box-shadow:0 4px 16px rgba(0,0,0,.08);
+      max-width:600px; margin:40px auto 0;
+    }
+    input,textarea {
+      width:100%; padding:14px; margin-bottom:16px;
+      border:1px solid #ddd; border-radius:12px;
+      font-size:1rem; font-family:inherit;
+    }
+    input:focus,textarea:focus {
+      border-color:var(--primary); outline:none;
+      box-shadow:0 0 0 2px rgba(99,102,241,.2);
+    }
+    button {
+      background:var(--primary); color:#fff; border:none;
+      padding:14px 24px; border-radius:999px; font-weight:600;
+      cursor:pointer; transition:.2s;
+    }
+    button:hover { background:var(--primary-dark); }
+    footer {
+      background:#fff; border-top:1px solid #eee; text-align:center;
+      padding:24px; margin-top:40px; font-size:.9rem; color:#555;
+    }
   </style>
 </head>
 <body>
+
+  <!-- NAV -->
   <header>
     <nav>
-      <div><strong>Tu Empresa</strong></div>
+      <div><strong style="font-size:1.2rem;color:var(--primary)">Tu Empresa</strong></div>
       <div>
         <a href="#servicios">Servicios</a>
         <a href="#stock">Stock</a>
@@ -35,71 +99,63 @@
     </nav>
   </header>
 
+  <!-- HERO -->
   <section class="hero">
     <div>
-      <h1>Importación y Exportación de Coches</h1>
-      <p>Traemos el coche que buscas desde cualquier parte de Europa o EE.UU. y nos encargamos de toda la gestión: transporte, aduanas, matriculación y garantía.</p>
+      <h1>Importación y Exportación de Coches Premium</h1>
+      <p>Encuentra el coche que buscas desde Europa o EE.UU. Nos encargamos de transporte, aduanas, matriculación y garantía.</p>
       <a href="#contacto" class="btn primary">Solicitar información</a>
     </div>
     <div>
-      <img src="https://picsum.photos/seed/coche1/800/450" alt="Coche ejemplo">
+      <img src="https://picsum.photos/seed/coche1/800/500" alt="Coche importado">
     </div>
   </section>
 
+  <!-- SERVICIOS -->
   <section id="servicios">
     <h2>Servicios</h2>
     <div class="grid">
-      <div class="card"><b>Búsqueda a medida</b><p>Encontramos el coche que quieres con historial verificado.</p></div>
-      <div class="card"><b>Transporte y aduanas</b><p>Gestión logística completa hasta tu puerta.</p></div>
-      <div class="card"><b>Matriculación</b><p>Nos encargamos de ITV y papeles en España.</p></div>
+      <div class="card"><h3>Búsqueda a medida</h3><p>Encontramos el coche que quieres con historial verificado.</p></div>
+      <div class="card"><h3>Transporte y aduanas</h3><p>Gestión logística completa hasta tu puerta.</p></div>
+      <div class="card"><h3>Matriculación</h3><p>Nos encargamos de ITV y papeles en España.</p></div>
     </div>
   </section>
 
+  <!-- STOCK -->
   <section id="stock">
-    <h2>Ejemplos de stock</h2>
-    <div class="grid">
-      <div class="card">
-        <img src="https://picsum.photos/seed/audi/600/350" alt="Audi">
-        <p><b>Audi A4 2019</b><br>120.000 km · Diesel</p>
-      </div>
-      <div class="card">
-        <img src="https://picsum.photos/seed/bmw/600/350" alt="BMW">
-        <p><b>BMW 330e 2020</b><br>80.000 km · Híbrido</p>
-      </div>
-      <div class="card">
-        <img src="https://picsum.photos/seed/mercedes/600/350" alt="Mercedes">
-        <p><b>Mercedes C220d 2018</b><br>150.000 km · Diesel</p>
-      </div>
+    <h2>Coches disponibles</h2>
+    <div class="grid" id="stock-grid">
+      <!-- Supabase JS insertará cards -->
     </div>
   </section>
 
+  <!-- CONTACTO -->
   <section id="contacto">
     <h2>Contacto</h2>
-	
     <form id="contact-form">
-    <input type="text" name="nombre" placeholder="Nombre" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="tel" name="telefono" placeholder="Teléfono (opcional)">
-    <textarea name="mensaje" placeholder="Mensaje" required></textarea>
+      <input type="text" name="nombre" placeholder="Nombre" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="tel" name="telefono" placeholder="Teléfono (opcional)">
+      <textarea name="mensaje" placeholder="Mensaje" required></textarea>
 
-    <!-- Campos ocultos para vincular a un coche concreto (opcionales) -->
-    <input type="hidden" name="car_id" id="car_id">
-    <input type="hidden" name="coche_interes" id="coche_interes">
+      <!-- Hidden fields -->
+      <input type="hidden" name="car_id" id="car_id">
+      <input type="hidden" name="coche_interes" id="coche_interes">
+      <input type="text" name="company" autocomplete="off" tabindex="-1" style="position:absolute; left:-10000px;">
 
-    <!-- Honeypot anti-spam (oculto a humanos) -->
-    <input type="text" name="company" autocomplete="off" tabindex="-1" style="position:absolute; left:-10000px;">
-
-    <button type="submit" id="submit-btn">Enviar</button>
-    <p id="form-status" aria-live="polite"></p>
-  </form>
-  
+      <button type="submit" id="submit-btn">Enviar</button>
+      <p id="form-status" aria-live="polite" style="margin-top:12px;text-align:center;"></p>
+    </form>
   </section>
 
+  <!-- FOOTER -->
   <footer>
-    <p>© 2025 Tu Empresa · Importación y Exportación de Coches</p>
+    © 2025 Tu Empresa · Importación y Exportación de Coches
   </footer>
+
+  <!-- Tu script de Supabase y envío (igual que antes) -->
   <script type="module">
-  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
   const SUPABASE_URL = "https://swzizabjkzllxwbrcsnp.supabase.co";
   const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
@@ -225,7 +281,7 @@
 
   // init
   cargarCoches();
-</script>
+  </script>
 
 </body>
 </html>
