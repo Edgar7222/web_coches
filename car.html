@@ -36,7 +36,7 @@
     html{scroll-behavior:smooth}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
-    /* Header + Drawer (MISMO que index) */
+    /* Header */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -51,18 +51,48 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);opacity:0;transition:opacity .28s ease}
-    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding:18px;-webkit-overflow-scrolling:touch;overflow:auto;will-change:transform}
-    @media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
-    .drawer-nav{display:flex;flex-direction:column;gap:12px}
-    .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
-    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+    /* Drawer: bajo el header */
+    .drawer{
+      position: fixed;
+      left: 0; right: 0;
+      top: var(--nav-h);
+      height: calc(100dvh - var(--nav-h));
+      display: grid; grid-template-columns:1fr;
+      pointer-events: none; z-index: 100;
+    }
+    .drawer-backdrop{
+      position: fixed;
+      left: 0; right: 0;
+      top: var(--nav-h);
+      height: calc(100dvh - var(--nav-h));
+      background: rgba(2,6,23,.45);
+      opacity: 0; transition: opacity .28s ease;
+    }
+    .drawer-inner{
+      align-self:start; justify-self:end;
+      width: clamp(320px, 78vw, 560px);
+      height: 100%;
+      background:#0b1220; border-left:1px solid var(--nav-border);
+      box-shadow:-24px 0 48px rgba(0,0,0,.6);
+      transform:translateX(100%); transition:transform .28s ease;
+      overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:18px; padding-top:16px; will-change:transform;
+    }
+    @media (min-width:768px) and (max-width:899px){
+      .drawer-inner{ width:min(88vw,560px); }
+    }
     .drawer.open{ pointer-events:auto }
     .drawer.open .drawer-inner{ transform:translateX(0) }
     .drawer.open .drawer-backdrop{ opacity:1 }
-    body.nav-open{ overflow:hidden; touch-action:none }
-    .drawer-close{position:absolute; top:10px; right:10px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid var(--nav-border); background:#111827; color:#e5e7eb; cursor:pointer }
+
+    .drawer-close{
+      position:absolute; top:10px; right:10px;
+      width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+      border-radius:12px; border:1px solid var(--nav-border);
+      background:#111827; color:#e5e7eb; cursor:pointer;
+    }
+
+    body.nav-open{ overflow:hidden; touch-action:none; overscroll-behavior:contain }
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -106,87 +136,6 @@
     .sticky-cta .cta-btn{background:var(--primary); color:#fff; padding:12px 18px; border-radius:999px; font-weight:700; text-decoration:none; display:inline-block}
     @media (max-width: 900px){ .sticky-cta{display:flex} body{padding-bottom:72px} }
     .sticky-cta.hidden{transform:translateY(110%); transition:transform .25s ease}
-	
-	/* === iPad / tablet drawer fix ===
-   Ancho más cómodo, altura fiable en iOS (vh/dvh/svh),
-   backdrop sólido y sin “fugas” detrás del panel.
-   Aplica en index.html y car.html.
-*/
-.drawer{
-  position: fixed;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  pointer-events: none;
-  z-index: 100; /* por encima del header */
-}
-.drawer-backdrop{
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, .55);
-  opacity: 0;
-  transition: opacity .28s ease;
-}
-.drawer-inner{
-  align-self: start;
-  justify-self: end;
-
-  /* ancho más cómodo en tablet */
-  width: clamp(320px, 78vw, 560px);
-
-  /* altura fiable en iOS */
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
-
-  background: #0b1220;
-  border-left: 1px solid var(--nav-border);
-  box-shadow: -24px 0 48px rgba(0,0,0,.6);
-
-  transform: translateX(100%);
-  transition: transform .28s ease;
-
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-
-  /* respeta notch / status bar */
-  padding: 18px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
-
-  will-change: transform;
-}
-
-@media (min-width: 768px) and (max-width: 899px){
-  .drawer-inner{ width: min(88vw, 560px); }
-}
-
-.drawer.open{ pointer-events: auto; }
-.drawer.open .drawer-inner{ transform: translateX(0); }
-.drawer.open .drawer-backdrop{ opacity: 1; }
-
-.drawer-close{
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  border: 1px solid var(--nav-border);
-  background: #111827;
-  color: #e5e7eb;
-  cursor: pointer;
-}
-
-/* bloquea scroll de la página mientras el panel está abierto (iOS) */
-body.nav-open{
-  overflow: hidden;
-  touch-action: none;
-  overscroll-behavior: contain;
-}
-
   </style>
 
   <!-- Utils (defer) -->
@@ -197,7 +146,7 @@ body.nav-open{
   <!-- Header -->
   <header class="site-header" role="banner">
     <div class="nav-wrap">
-      <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
+      <a class="brand" href="/" aria-label="Inicio" aria-current="page">Tu Empresa</a>
       <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-controls="mobile-drawer" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </button>
@@ -380,7 +329,7 @@ body.nav-open{
       const videoBox = $('#car-video');
       if (data.video_url && data.video_url.trim()) {
         let url = data.video_url.trim();
-        if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
+        if (url includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
         if (url.endsWith('.mp4')) {
           videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:16px;max-height:480px;box-shadow:var(--shadow)"></video>`;
         } else {
@@ -462,7 +411,7 @@ body.nav-open{
     });
   </script>
 
-  <!-- Menú (igual que index, con resets bfcache/iOS) -->
+  <!-- Menú (igual que index, sin cierre por backdrop) -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
@@ -491,7 +440,8 @@ body.nav-open{
 
       toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
       closeBtn?.addEventListener('click', close, { passive:true });
-      backdrop?.addEventListener('click', close, { passive:true });
+      /* ELIMINADO: cierre por backdrop
+         backdrop?.addEventListener('click', close, { passive:true }); */
 
       drawer.addEventListener('click', (e) => {
         const a = e.target.closest('a[href]');
