@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>Stock — Coches disponibles</title>
+  <meta name="description" content="Explora nuestro stock de coches premium importados. Filtra por marca, combustible, caja y precio.">
+  <meta name="robots" content="index,follow">
+  <link id="canonical" rel="canonical" href="https://web-coches-eta.vercel.app/stock.html">
+
+  <!-- OpenGraph/Twitter -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tu Empresa">
+  <meta property="og:title" content="Stock — Coches disponibles">
+  <meta property="og:description" content="Filtra y encuentra coches premium en stock.">
+  <meta property="og:image" content="https://web-coches-eta.vercel.app/og-image.jpg">
+  <meta property="og:url" content="https://web-coches-eta.vercel.app/stock.html">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Favicons / PWA -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#6366F1; --primary-dark:#4F46E5;
+      --bg:#111827; --text:#F9FAFB; --muted:#CBD5E1;
+      --card:#1F2937; --border:#374151; --shadow:0 8px 24px rgba(0,0,0,.35);
+      --nav-h:64px; --nav-bg:#0f172a; --nav-border:rgba(255,255,255,.06);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55; overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+
+    /* Header + Drawer (idéntico a index/car) */
+    .site-header{position:sticky;top:0;z-index:50;background:var(--nav-bg);border-bottom:1px solid var(--nav-border);backdrop-filter:blur(8px) saturate(120%)}
+    .nav-wrap{max-width:1200px;margin:0 auto;height:var(--nav-h);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{color:#fff;font-weight:800;letter-spacing:.2px;font-size:clamp(1.05rem,2vw,1.2rem)}
+    .nav-desktop{display:none;gap:16px;align-items:center}
+    .nav-desktop a{color:rgba(249,250,251,.92);font-weight:600;padding:8px 10px;border-radius:10px;transition:background .2s,color .2s}
+    .nav-desktop a:hover{color:#fff;background:rgba(255,255,255,.06)}
+    .btn{display:inline-block;padding:10px 16px;border-radius:999px;font-weight:700}
+    .btn.primary{background:var(--primary);color:#fff}
+    .btn.primary:hover{background:var(--primary-dark)}
+    .nav-toggle{width:44px;height:44px;border-radius:12px;border:1px solid var(--nav-border);background:transparent;cursor:pointer;display:grid;place-items:center;gap:4px}
+    .nav-toggle:hover{background:rgba(255,255,255,.04)}
+    .nav-toggle .bar{width:20px;height:2px;background:#e5e7eb;border-radius:2px;display:block;transition:transform .25s ease,opacity .25s ease}
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(1){transform:translateY(6px) rotate(45deg)}
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(2){opacity:0}
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    @media(min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
+
+    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
+    .drawer-backdrop{display:none}
+    .drawer-inner{
+      align-self:start;justify-self:end;width:clamp(320px,78vw,560px);
+      height:100vh;height:100svh;height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);
+      box-shadow:-24px 0 48px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;
+      display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch;padding:18px;padding-top:calc(16px + env(safe-area-inset-top,0px))
+    }
+    .drawer.open{pointer-events:auto}
+    .drawer.open .drawer-inner{transform:translateX(0)}
+    body.nav-open{overflow:hidden;touch-action:none;overscroll-behavior:contain}
+    .drawer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
+    .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#111827;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+    /* Layout */
+    .container{max-width:1200px;margin:0 auto;padding:28px 18px}
+
+    /* Filtros */
+    .filters{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);
+      padding:16px;display:grid;gap:12px;grid-template-columns:repeat(12,1fr);align-items:end
+    }
+    .filters .group{display:flex;flex-direction:column;gap:6px}
+    .filters label{font-weight:700;color:#E5E7EB}
+    .filters input,.filters select{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);
+      background:#0B1220;color:#F1F5F9;font:inherit;outline:none;transition:border .15s, box-shadow .15s
+    }
+    .filters input::placeholder{color:#94A3B8}
+    .filters input:focus,.filters select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.25)}
+    .filters .actions{display:flex;gap:8px}
+    .filters .actions .btn{padding:10px 14px}
+    @media(max-width:960px){
+      .filters{grid-template-columns:1fr 1fr;gap:14px}
+      .span-3{grid-column:1 / -1}
+    }
+    @media(min-width:961px){
+      .span-3{grid-column:span 3}
+      .span-2{grid-column:span 2}
+      .span-4{grid-column:span 4}
+    }
+
+    /* Grid resultados */
+    .meta-row{display:flex;align-items:center;justify-content:space-between;margin:16px 2px;color:#E2E8F0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+    .card img{width:100%;display:block;border-radius:16px 16px 0 0;aspect-ratio:16/9;object-fit:cover;background:#0b0b0b}
+    .card .body{padding:12px}
+    .card .body b{color:#fff}
+    .card .body span{color:#cbd5e1}
+
+    /* Paginación */
+    .pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin:22px 0 8px}
+    .pagination button{background:#0B1220;border:1px solid var(--border);color:#E2E8F0;border-radius:10px;padding:8px 12px;cursor:pointer}
+    .pagination button[disabled]{opacity:.5;cursor:not-allowed}
+    .pagination .page{min-width:38px}
+  </style>
+
+  <!-- Utils -->
+  <script src="js/utils.js" defer></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header" role="banner">
+    <div class="nav-wrap">
+      <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
+      <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-controls="mobile-drawer" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+      <nav class="nav-desktop" aria-label="Menú principal">
+        <a href="/#servicios">Servicios</a>
+        <a href="/#stock">Stock</a>
+        <a href="/#contacto" class="btn primary">Contacto</a>
+      </nav>
+    </div>
+    <!-- Drawer -->
+    <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
+      <div class="drawer-inner">
+        <div class="drawer-top">
+          <span class="drawer-title">Menú</span>
+          <button class="drawer-close" aria-label="Cerrar menú">✕</button>
+        </div>
+        <nav class="drawer-nav" style="display:flex;flex-direction:column;gap:12px">
+          <a href="/#servicios" class="drawer-link" style="padding:12px 14px;border-radius:12px;color:#F1F5F9;border:1px solid transparent">Servicios</a>
+          <a href="/#stock" class="drawer-link"   style="padding:12px 14px;border-radius:12px;color:#F1F5F9;border:1px solid transparent">Stock</a>
+          <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
+        </nav>
+        <div style="height:calc(12px + env(safe-area-inset-bottom,0px))"></div>
+      </div>
+      <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 style="margin:6px 2px 14px;font-size:clamp(1.6rem,2.4vw,2.25rem);font-weight:800;letter-spacing:.2px">Stock disponible</h1>
+
+    <!-- Filtros -->
+    <form id="filters" class="filters" role="search" aria-label="Filtrar stock">
+      <div class="group span-3">
+        <label for="marca">Marca</label>
+        <select id="marca" name="marca">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="group span-3">
+        <label for="combustible">Combustible</label>
+        <select id="combustible" name="combustible">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="group span-3">
+        <label for="caja">Caja</label>
+        <select id="caja" name="caja">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="group span-2">
+        <label for="min">Precio mín</label>
+        <input id="min" name="min" type="number" inputmode="numeric" min="0" placeholder="0" />
+      </div>
+      <div class="group span-2">
+        <label for="max">Precio máx</label>
+        <input id="max" name="max" type="number" inputmode="numeric" min="0" placeholder="∞" />
+      </div>
+      <div class="group span-2">
+        <label for="orden">Ordenar por</label>
+        <select id="orden" name="orden">
+          <option value="recientes">Recientes</option>
+          <option value="precio_asc">Precio ↑</option>
+          <option value="precio_desc">Precio ↓</option>
+          <option value="km_asc">Km ↑</option>
+          <option value="km_desc">Km ↓</option>
+        </select>
+      </div>
+      <div class="group span-3 actions">
+        <button type="submit" class="btn primary">Aplicar</button>
+        <button type="button" id="reset" class="btn" style="background:#0B1220;border:1px solid var(--border);color:#E2E8F0">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="meta-row">
+      <div id="results-count">Cargando…</div>
+      <div id="active-filters" style="font-size:.95rem;color:#cbd5e1"></div>
+    </div>
+
+    <section id="grid" class="grid" role="list"></section>
+
+    <nav class="pagination" aria-label="Paginación" id="pagination" hidden>
+      <button id="prev" aria-label="Página anterior">«</button>
+      <span id="pages" style="display:flex;gap:6px"></span>
+      <button id="next" aria-label="Página siguiente">»</button>
+    </nav>
+  </main>
+
+  <footer style="background:#0B1220;border-top:1px solid rgba(255,255,255,.06);text-align:center;padding:24px;margin-top:28px;color:#94A3B8">
+    © 2025 Tu Empresa · Stock de vehículos
+  </footer>
+
+  <!-- App -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // Supabase público
+    const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Constantes
+    const PAGE = 24;
+    const grid = document.getElementById('grid');
+    const resultsCount = document.getElementById('results-count');
+    const pagesBox = document.getElementById('pages');
+    const pagWrap = document.getElementById('pagination');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+
+    // Helpers
+    const $ = (s)=>document.querySelector(s);
+    const getParams = () => Object.fromEntries(new URLSearchParams(location.search));
+    const setParams = (obj) => {
+      const sp = new URLSearchParams(obj);
+      const qs = sp.toString();
+      history.pushState(null, '', qs ? `?${qs}` : location.pathname);
+      // canonical a URL actual (incluye filtros)
+      const c = document.getElementById('canonical');
+      if (c) c.setAttribute('href', location.origin + location.pathname + (qs?`?${qs}`:''));
+    };
+
+    const cardHTML = (c) => {
+      const titulo = `${c.marca ?? ''} ${c.modelo ?? ''} ${c.anio ?? ''}`.trim();
+      const img = (Array.isArray(c.imagenes) && c.imagenes[0]) ? c.imagenes[0] : "https://picsum.photos/seed/placeholder/800/450";
+      const km = c.km ? `${Number(c.km).toLocaleString('es-ES')} km` : null;
+      const resumen = [km, c.combustible, c.caja].filter(Boolean).join(' · ');
+      const precio = c.precio_objetivo ? `${Number(c.precio_objetivo).toLocaleString('es-ES')} €` : 'Bajo pedido';
+      return `
+        <article class="card" role="listitem">
+          <a href="car.html?id=${encodeURIComponent(c.id)}" aria-label="Ver ${sanitizeHTML(titulo)}">
+            <img src="${img}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260">
+          </a>
+          <div class="body">
+            <b>${sanitizeHTML(titulo)}</b><br>
+            <span>${sanitizeHTML(resumen)}</span><br>
+            <span style="color:#E5E7EB">${sanitizeHTML(precio)}</span>
+          </div>
+        </article>
+      `;
+    };
+
+    async function loadFiltersOptions() {
+      // Cargamos algunos campos para generar listas únicas
+      const { data, error } = await supabase
+        .from('cars')
+        .select('marca, combustible, caja, estado_publicacion')
+        .in('estado_publicacion', ['publicado','disponible'])
+        .limit(1000);
+
+      if (error) { console.error(error); return; }
+      const marcas = [...new Set(data.map(d=>d.marca).filter(Boolean))].sort();
+      const combs  = [...new Set(data.map(d=>d.combustible).filter(Boolean))].sort();
+      const cajas  = [...new Set(data.map(d=>d.caja).filter(Boolean))].sort();
+
+      const fill = (sel, arr) => {
+        const el = document.getElementById(sel);
+        arr.forEach(v => {
+          const o = document.createElement('option');
+          o.value = v; o.textContent = v;
+          el.appendChild(o);
+        });
+      };
+      fill('marca', marcas);
+      fill('combustible', combs);
+      fill('caja', cajas);
+
+      // Si hay params ya en URL, precargamos valores en selects/inputs
+      const p = getParams();
+      ['marca','combustible','caja','orden'].forEach(k => { if (p[k]) document.getElementById(k).value = p[k]; });
+      if (p.min) document.getElementById('min').value = p.min;
+      if (p.max) document.getElementById('max').value = p.max;
+    }
+
+    async function loadPage() {
+      const p = getParams();
+      const page = Math.max(1, parseInt(p.page || '1', 10) || 1);
+
+      let query = supabase
+        .from('cars')
+        .select('id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion', { count: 'exact' })
+        .in('estado_publicacion', ['publicado','disponible']);
+
+      // Filtros
+      if (p.marca)        query = query.eq('marca', p.marca);
+      if (p.combustible)  query = query.eq('combustible', p.combustible);
+      if (p.caja)         query = query.eq('caja', p.caja);
+      if (p.min || p.max) query = query.not('precio_objetivo','is',null);
+      if (p.min)          query = query.gte('precio_objetivo', Number(p.min));
+      if (p.max)          query = query.lte('precio_objetivo', Number(p.max));
+
+      // Orden
+      const ord = p.orden || 'recientes';
+      if (ord === 'precio_asc')  query = query.order('precio_objetivo', { ascending: true, nullsFirst: false });
+      if (ord === 'precio_desc') query = query.order('precio_objetivo', { ascending: false, nullsFirst: false });
+      if (ord === 'km_asc')      query = query.order('km', { ascending: true, nullsFirst: true });
+      if (ord === 'km_desc')     query = query.order('km', { ascending: false, nullsFirst: true });
+      if (ord === 'recientes')   query = query.order('created_at', { ascending: false, nullsFirst: false });
+
+      // Rango/paginación
+      const from = (page-1) * PAGE;
+      const to   = from + PAGE - 1;
+      query = query.range(from, to);
+
+      // Cargando…
+      grid.innerHTML = Array.from({length: Math.min(PAGE, 6)}).map(()=>`
+        <article class="card"><div style="height:180px;background:#0b0b0b;border-radius:16px 16px 0 0"></div>
+        <div class="body"><div style="height:18px;background:#0f172a;border-radius:6px;margin:6px 0;width:70%"></div>
+        <div style="height:14px;background:#0f172a;border-radius:5px;margin:6px 0;width:50%"></div></div></article>
+      `).join('');
+      resultsCount.textContent = 'Cargando…';
+      pagWrap.hidden = true;
+
+      const { data, error, count } = await query;
+      if (error) { console.error(error); grid.innerHTML = `<p style="color:#FCA5A5">Error cargando el stock.</p>`; return; }
+
+      // Render
+      if (!data?.length) {
+        grid.innerHTML = `<p style="color:#cbd5e1">No hay resultados con esos filtros.</p>`;
+      } else {
+        grid.innerHTML = data.map(cardHTML).join('');
+      }
+
+      // Meta + paginación
+      const total = count || 0;
+      resultsCount.textContent = `${total} resultado${total===1?'':'s'}`;
+      const totalPages = Math.max(1, Math.ceil(total / PAGE));
+
+      // Paginación UI
+      pagesBox.innerHTML = '';
+      const mkBtn = (n, active=false) => {
+        const b = document.createElement('button');
+        b.textContent = n; b.className = 'page';
+        if (active) { b.style.background = 'var(--primary)'; b.style.color = '#fff'; }
+        b.onclick = () => { setParams({...p, page: n}); loadPage(); };
+        pagesBox.appendChild(b);
+      };
+
+      const windowSize = 5;
+      let start = Math.max(1, page - Math.floor(windowSize/2));
+      let end   = Math.min(totalPages, start + windowSize - 1);
+      start     = Math.max(1, Math.min(start, end - windowSize + 1));
+
+      for (let i=start; i<=end; i++) mkBtn(i, i===page);
+      prevBtn.disabled = page<=1;
+      nextBtn.disabled = page>=totalPages;
+      prevBtn.onclick = ()=>{ setParams({...p, page: page-1}); loadPage(); };
+      nextBtn.onclick = ()=>{ setParams({...p, page: page+1}); loadPage(); };
+      pagWrap.hidden = totalPages<=1;
+
+      // Chips de filtros activos
+      const chips = [];
+      if (p.marca) chips.push(`Marca: ${p.marca}`);
+      if (p.combustible) chips.push(`Comb.: ${p.combustible}`);
+      if (p.caja) chips.push(`Caja: ${p.caja}`);
+      if (p.min) chips.push(`≥ ${Number(p.min).toLocaleString('es-ES')}€`);
+      if (p.max) chips.push(`≤ ${Number(p.max).toLocaleString('es-ES')}€`);
+      if (p.orden && p.orden!=='recientes') chips.push(`Orden: ${p.orden.replace('_',' ')}`);
+      document.getElementById('active-filters').textContent = chips.join(' · ');
+    }
+
+    // Eventos filtros
+    document.getElementById('filters')?.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const next = Object.fromEntries([...fd.entries()].filter(([,v]) => v !== ''));
+      // reiniciamos a página 1 al cambiar filtros
+      next.page = '1';
+      setParams(next);
+      loadPage();
+    });
+    document.getElementById('reset')?.addEventListener('click', ()=>{
+      setParams({});
+      document.getElementById('filters').reset();
+      loadPage();
+    });
+
+    // Init
+    await loadFiltersOptions();
+    await loadPage();
+
+    // Manejo del historial (back/forward)
+    window.addEventListener('popstate', loadPage);
+  </script>
+
+  <!-- Drawer: solo cierra con la X -->
+  <script>
+    (() => {
+      const toggleBtn = document.getElementById('nav-toggle');
+      const drawer    = document.getElementById('mobile-drawer');
+      const closeBtn  = drawer?.querySelector('.drawer-close');
+      if (!toggleBtn || !drawer) return;
+
+      const focusableSel = ['a[href]','button:not([disabled])','input','select','textarea','[tabindex]:not([tabindex="-1"])'].join(',');
+      let lastFocused = null;
+
+      const open = () => {
+        lastFocused = document.activeElement;
+        drawer.classList.add('open');
+        document.body.classList.add('nav-open');
+        toggleBtn.setAttribute('aria-expanded','true');
+        drawer.querySelector(focusableSel)?.focus({preventScroll:true});
+      };
+      const close = () => {
+        drawer.classList.remove('open');
+        document.body.classList.remove('nav-open');
+        toggleBtn.setAttribute('aria-expanded','false');
+        lastFocused?.focus?.({preventScroll:true});
+      };
+      const isOpen = () => drawer.classList.contains('open');
+
+      toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
+      closeBtn?.addEventListener('click', close, { passive:true });
+
+      // Accesibilidad extra
+      window.addEventListener('keydown', (e) => {
+        if (!isOpen()) return;
+        if (e.key === 'Escape') { e.preventDefault(); close(); }
+        if (e.key === 'Tab') {
+          const f = [...drawer.querySelectorAll(focusableSel)];
+          if (!f.length) return;
+          const first = f[0], last = f[f.length-1];
+          if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        }
+      });
+
+      const reset = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
+      window.addEventListener('pageshow', reset);
+      window.addEventListener('pagehide', reset);
+      window.addEventListener('beforeunload', reset);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) reset(); });
+    })();
+  </script>
+</body>
+</html>
