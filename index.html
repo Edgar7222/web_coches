@@ -262,32 +262,16 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
     const grid = document.getElementById("stock-grid");
-    const FALLBACK = "https://picsum.photos/seed/car/1000/700";
-
-    // helper para portada
-    function coverOf(rec){
-      if (rec.cover) return rec.cover;
-      if (Array.isArray(rec.imagenes) && rec.imagenes.length) return rec.imagenes[0];
-      if (typeof rec.imagenes === "string") {
-        const m = rec.imagenes.match(/^{"?(.+?)"?}$/);
-        if (m) return m[1];
-        return rec.imagenes;
-      }
-      return null;
-    }
-
     const cardHTML = (c) => {
       const titulo  = `${c.marca ?? ""} ${c.modelo ?? ""} ${c.anio ?? ""}`.trim();
-      const imgSrc  = coverOf(c) || FALLBACK;
+      const imgSrc  = (Array.isArray(c.imagenes) && c.imagenes[0]) ? c.imagenes[0] : "https://picsum.photos/seed/placeholder/800/450";
       const km      = (c.km ?? 0).toLocaleString("es-ES");
       const resumen = [km && `${km} km`, c.combustible, c.caja].filter(Boolean).join(" · ");
       const precio  = c.precio_objetivo ? `${Number(c.precio_objetivo).toLocaleString("es-ES")} €` : "Bajo pedido";
       return `
         <article class="card" role="listitem">
           <a href="car.html?id=${encodeURIComponent(c.id)}" aria-label="Ver ${sanitizeHTML(titulo)}">
-            <img src="${imgSrc}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260"
-                 referrerpolicy="no-referrer"
-                 onerror="this.onerror=null;this.src='${FALLBACK}'">
+            <img src="${imgSrc}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260">
           </a>
           <div style="padding:10px">
             <b style="color:#fff">${sanitizeHTML(titulo)}</b><br>
@@ -300,36 +284,14 @@
     async function cargarCoches() {
       if (!grid) return;
       grid.innerHTML = "<p style='color:var(--muted)'>Cargando coches…</p>";
-
-      // 1) Intento con la VIEW
-      let { data, error } = await supabase
-        .from("cars_with_cover")
-        .select("id, marca, modelo, version, anio, km, combustible, caja, cover, precio_objetivo, created_at, estado_publicacion")
-        // tolerante: publicados, disponibles o NULL
-        .or("estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null")
+      const { data, error } = await supabase
+        .from("cars")
+        .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
+        .in("estado_publicacion", ["publicado", "disponible"])
         .order("created_at", { ascending: false })
         .limit(12);
-
-      // 2) Fallback si hay error **o si la view devuelve 0**
-      if (error || !(data && data.length)) {
-        if (error) console.warn("[HOME] usando fallback a 'cars' por error:", error.message);
-        else console.warn("[HOME] 'cars_with_cover' vacío, usando fallback a 'cars'.");
-
-        const fb = await supabase
-          .from("cars")
-          .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
-          // en fallback NO filtro por estado para no quedarnos sin coches
-          .order("created_at", { ascending: false })
-          .limit(12);
-
-        if (!fb.error) { data = fb.data; }
-        else { console.error(fb.error); }
-      }
-
-      if (!data?.length) {
-        grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`;
-        return;
-      }
+      if (error) { console.error(error); grid.innerHTML = `<p style="color:#FCA5A5">Error cargando coches.</p>`; return; }
+      if (!data?.length) { grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`; return; }
       grid.innerHTML = data.map(cardHTML).join("");
     }
 
