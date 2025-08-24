@@ -1,10 +1,11 @@
 {
-  "name": "web_coches",
-  "version": "1.0.0",
+  "name": "web-coches",
   "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "engines": { "node": ">=18" },
   "scripts": {
-    "dev": "vercel dev",
-    "build": "vercel build"
+    "build": "echo \"no build step\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"

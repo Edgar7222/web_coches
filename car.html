@@ -6,24 +6,25 @@
   <title id="meta-title">Detalle del vehículo</title>
   <meta name="description" id="meta-description" content="Ficha completa del vehículo premium importado: fotos, vídeo, especificaciones, extras, precio y contacto." />
 
-  <!-- OpenGraph -->
+  <!-- Social -->
   <meta property="og:type" content="product" />
   <meta property="og:title" id="og-title" content="Coche premium — Detalle" />
   <meta property="og:description" id="og-description" content="Fotos, vídeo, especificaciones y precio del coche premium seleccionado." />
-  <meta property="og:image" id="og-image" content="https://tudominio.com/og-car.jpg" />
-  <meta property="og:url" id="og-url" content="https://tudominio.com/car.html" />
-
-  <!-- Twitter Card -->
+  <meta property="og:image" id="og-image" content="https://web-coches-eta.vercel.app/og-car.jpg" />
+  <meta property="og:url" id="og-url" content="https://web-coches-eta.vercel.app/car.html" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" id="twitter-title" content="Coche premium — Detalle" />
   <meta name="twitter:description" id="twitter-description" content="Fotos, vídeo, especificaciones y precio del coche premium seleccionado." />
-  <meta name="twitter:image" id="twitter-image" content="https://tudominio.com/og-car.jpg" />
+  <meta name="twitter:image" id="twitter-image" content="https://web-coches-eta.vercel.app/og-car.jpg" />
+  <link id="canonical" rel="canonical" href="https://web-coches-eta.vercel.app/car.html" />
 
-  <link id="canonical" rel="canonical" href="https://tudominio.com/car.html" />
-  <script src="js/utils.js"></script>
   <script id="car-jsonld" type="application/ld+json"></script>
 
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --primary:#6366F1; --primary-dark:#4F46E5;
@@ -35,14 +36,7 @@
     html{scroll-behavior:smooth}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
-    /* Header */
-    .site-header{
-      position:sticky; top:0; z-index:50;
-      background:var(--nav-bg);
-      border-bottom:1px solid var(--nav-border);
-      backdrop-filter:blur(8px) saturate(120%);
-      -webkit-backdrop-filter:blur(8px) saturate(120%);
-    }
+    .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
     .nav-desktop{display:none;gap:16px;align-items:center}
@@ -56,67 +50,26 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* Drawer: panel y backdrop empiezan debajo del header */
-    .drawer{
-      position:fixed;
-      left:0; right:0;
-      top:var(--nav-h);
-      height:calc(100dvh - var(--nav-h));
-      display:grid; grid-template-columns:1fr;
-      pointer-events:none; z-index:60;
-    }
-    .drawer-backdrop{
-      position:fixed;
-      left:0; right:0;
-      top:var(--nav-h);
-      height:calc(100dvh - var(--nav-h));
-      background:rgba(2,6,23,.55);
-      opacity:0; transition:opacity .28s ease;
-    }
-    .drawer-inner{
-      align-self:start; justify-self:end;
-      width:min(92vw,360px);
-      height:100%;
-      background:#0b1220;
-      border-left:1px solid var(--nav-border);
-      box-shadow:-24px 0 48px rgba(0,0,0,.6);
-      transform:translateX(100%); transition:transform .28s ease;
-      display:flex; flex-direction:column;
-      overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:18px;
-      position:relative;
-    }
+    /* Drawer bajo el header */
+    .drawer{position:fixed; left:0; right:0; top:var(--nav-h); height:calc(100dvh - var(--nav-h)); display:grid; grid-template-columns:1fr; pointer-events:none; z-index:60}
+    .drawer-backdrop{position:fixed; left:0; right:0; top:var(--nav-h); height:calc(100dvh - var(--nav-h)); background:rgba(2,6,23,.55); opacity:0; transition:opacity .28s ease}
+    .drawer-inner{align-self:start; justify-self:end; width:min(92vw,360px); height:100%; background:#0b1220; border-left:1px solid var(--nav-border); box-shadow:-24px 0 48px rgba(0,0,0,.6); transform:translateX(100%); transition:transform .28s ease; display:flex; flex-direction:column; overflow:auto; -webkit-overflow-scrolling:touch; padding:18px; position:relative}
     @media (min-width:600px) and (max-width:899px){ .drawer-inner{ width:420px } }
     .drawer-nav{display:flex;flex-direction:column;gap:12px}
     .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
     .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
-
-    /* Estado abierto */
-    .drawer.open{ pointer-events:auto; }
-    .drawer.open .drawer-inner{ transform:translateX(0); }
-    .drawer.open .drawer-backdrop{ opacity:1; }
-    body.nav-open{ overflow:hidden; }
-
-    /* Botón cerrar: dentro del panel, sin blur */
-    .drawer-close{
-      position:absolute;
-      top:10px; right:10px;
-      width:40px; height:40px;
-      display:flex; align-items:center; justify-content:center;
-      border-radius:12px;
-      border:1px solid var(--nav-border);
-      background:#111827;           /* sólido, sin backdrop-filter */
-      color:#e5e7eb; cursor:pointer;
-      box-shadow:none;               /* sin halo */
-    }
+    .drawer.open{ pointer-events:auto }
+    .drawer.open .drawer-inner{ transform:translateX(0) }
+    .drawer.open .drawer-backdrop{ opacity:1 }
+    body.nav-open{ overflow:hidden }
+    .drawer-close{position:absolute; top:10px; right:10px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid var(--nav-border); background:#111827; color:#e5e7eb; cursor:pointer; box-shadow:none}
     .drawer-close:active{transform:scale(.98)}
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
 
-    /* Carrusel */
+    /* Galería */
     .gallery{position:relative;overflow:hidden;border-radius:16px;background:#000;box-shadow:var(--shadow);margin:18px 0 28px}
-    .slider{width:100%;height:100%}
     .slider-track{display:flex;transition:transform .35s ease-out}
     .slide{min-width:100%;height:clamp(260px,48vw,520px);object-fit:cover;user-select:none;pointer-events:none;background:#0b0b0b}
 
@@ -155,18 +108,19 @@
     @media (max-width: 900px){ .sticky-cta{display:flex} body{padding-bottom:72px} }
     .sticky-cta.hidden{transform:translateY(110%); transition:transform .25s ease}
   </style>
+
+  <!-- Utils (defer) -->
+  <script src="js/utils.js" defer></script>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header" role="banner">
     <div class="nav-wrap">
-      <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
-
+      <a class="brand" href="/" aria-label="Inicio" aria-current="page">Tu Empresa</a>
       <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-controls="mobile-drawer" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </button>
-
       <nav class="nav-desktop" aria-label="Menú principal">
         <a href="/#servicios">Servicios</a>
         <a href="/#stock">Stock</a>
@@ -174,7 +128,7 @@
       </nav>
     </div>
 
-    <!-- Drawer (debajo del header) -->
+    <!-- Drawer -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
         <button class="drawer-close" aria-label="Cerrar menú">✕</button>
@@ -196,14 +150,14 @@
     <div id="car-video" role="region" aria-label="Vídeo del coche"></div>
     <section class="specs" id="car-specs" aria-label="Especificaciones técnicas"></section>
 
-    <form id="contact-form" aria-label="Formulario de contacto">
+    <form id="contact-form" aria-label="Formulario de contacto" novalidate>
       <h2>Solicita información</h2>
       <label for="nombre">Nombre</label>
-      <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+      <input type="text" id="nombre" name="nombre" placeholder="Nombre" required minlength="2" maxlength="100">
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="Email" required>
+      <input type="email" id="email" name="email" placeholder="Email" required maxlength="254">
       <label for="mensaje">Mensaje</label>
-      <textarea id="mensaje" name="mensaje" placeholder="Mensaje" rows="4" required></textarea>
+      <textarea id="mensaje" name="mensaje" placeholder="Mensaje" rows="4" required minlength="10" maxlength="2000"></textarea>
       <input type="hidden" name="coche_interes" id="coche_interes">
       <button type="submit">Enviar</button>
       <p id="form-status" aria-live="polite"></p>
@@ -221,6 +175,7 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+    // Lectura pública de datos del coche
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -242,10 +197,10 @@
 
       if (error || !data) { document.body.innerHTML = '<p style="padding:24px">Coche no encontrado.</p>'; return; }
 
-      const title = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`;
+      const title = `${data.marca} ${data.modelo}${data.version ? ' ' + data.version : ''} ${data.anio || ''}`.trim();
       $('#car-title').textContent = title;
-
       document.title = `${title} — Detalle del vehículo`;
+
       const desc = `Coche ${title}, ${data.km?.toLocaleString('es-ES')} km, ${data.combustible ?? '-'}, ${data.caja ?? '-'}, precio ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+"€" : "Bajo pedido"}.`;
       $('#meta-description').setAttribute("content", desc);
       $('#og-title').setAttribute("content", title);
@@ -275,7 +230,7 @@
       };
       document.getElementById("car-jsonld").textContent = JSON.stringify(jsonld);
 
-      /* Carrusel */
+      /* Galería */
       const images = Array.isArray(data.imagenes) ? data.imagenes : [];
       const gallery = $('#car-gallery');
 
@@ -285,7 +240,7 @@
         gallery.innerHTML = `
           <div class="slider" aria-label="Carrusel de imágenes">
             <div class="slider-track">
-              ${images.map((src,i) => `<img class="slide" src="${src}" alt="${title} — imagen ${i+1}" loading="lazy">`).join('')}
+              ${images.map((src,i) => `<img class="slide" src="${src}" alt="${sanitizeHTML(title)} — imagen ${i+1}" loading="lazy" decoding="async" width="1200" height="800">`).join('')}
             </div>
             <button class="nav-btn nav-prev" aria-label="Imagen anterior">
               <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -313,18 +268,20 @@
           if (counter) counter.textContent = `${idx+1} / ${N}`;
         };
 
+        let timer = null;
+        const start = () => { if (N <= 1) return; clearInterval(timer); timer = setInterval(()=>set(idx+1), 4000); };
+        const stop  = () => { if (timer) clearInterval(timer); timer = null; };
+
         prevBtn.onclick = () => { stop(); set(idx - 1); start(); };
         nextBtn.onclick = () => { stop(); set(idx + 1); start(); };
         if (N <= 1) { prevBtn.disabled = true; nextBtn.disabled = true; }
         dots.forEach(d => d.onclick = () => { stop(); set(+d.dataset.i); start(); });
 
-        let timer = null;
-        const start = () => { if (N <= 1) return; clearInterval(timer); timer = setInterval(()=>set(idx+1), 4000); };
-        const stop  = () => { if (timer) clearInterval(timer); timer = null; };
         gallery.addEventListener('mouseenter', stop);
         gallery.addEventListener('mouseleave', start);
         document.addEventListener('visibilitychange', () => { document.hidden ? stop() : start(); });
 
+        // Gestos
         let startX=0, dx=0, touching=false;
         const onDown = (e)=>{touching=true; startX=(e.touches?.[0].clientX ?? e.clientX); stop();};
         const onMove = (e)=>{if(!touching) return; const x=(e.touches?.[0].clientX ?? e.clientX); dx=x-startX;};
@@ -357,21 +314,18 @@
       }
 
       /* Specs + Descripción */
-      // ✅ DESPUÉS (seguro) - Reemplaza la sección completa
-const specsEl = $('#car-specs');
-safeInnerHTML(specsEl, `
-  <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
-  <p><b>Combustible:</b> ${sanitizeHTML(data.combustible) ?? '-'}</p>
-  <p><b>Caja:</b> ${sanitizeHTML(data.caja) ?? '-'}</p>
-  <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+' €' : 'Bajo pedido'}</p>
-  ${data.extras ? `<p><b>Extras:</b> ${sanitizeHTML(data.extras)}</p>` : ''}
-  <h3>Descripción</h3>
-  <div class="desc"></div>
-`);
-
-// ✅ Insertar descripción de forma segura
-const descDiv = specsEl.querySelector('.desc');
-safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.descripcion.trim() : 'Sin descripción');
+      const specsEl = $('#car-specs');
+      safeInnerHTML(specsEl, `
+        <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
+        <p><b>Combustible:</b> ${sanitizeHTML(data.combustible) ?? '-'}</p>
+        <p><b>Caja:</b> ${sanitizeHTML(data.caja) ?? '-'}</p>
+        <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+' €' : 'Bajo pedido'}</p>
+        ${data.extras ? `<p><b>Extras:</b> ${sanitizeHTML(data.extras)}</p>` : ''}
+        <h3>Descripción</h3>
+        <div class="desc"></div>
+      `);
+      const descDiv = specsEl.querySelector('.desc');
+      safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.descripcion.trim() : 'Sin descripción');
 
       /* Sticky CTA */
       const bar = document.getElementById('sticky-cta');
@@ -391,7 +345,7 @@ safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.de
     }
     loadCar();
 
-    // Lead
+    // Lead: enviar al backend
     const formEl = document.getElementById('contact-form');
     formEl?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -406,18 +360,30 @@ safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.de
       };
 
       const statusEl = document.getElementById('form-status');
+
+      if (!Validator.required(payload.nombre, 2)) { statusEl.textContent = 'Nombre inválido.'; return; }
+      if (!Validator.email(payload.email)) { statusEl.textContent = 'Email inválido.'; return; }
+      if (!Validator.required(payload.mensaje, 10)) { statusEl.textContent = 'Mensaje demasiado corto.'; return; }
+
       statusEl.textContent = 'Enviando…';
-
-      const { error } = await supabase.from('leads').insert([payload]);
-      if (error) { statusEl.textContent = 'Error guardando lead.'; return; }
-
-      try { await fetch('/api/notify-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }); } catch {}
-      statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
-      formEl.reset();
+      try {
+        const res = await fetch('/api/notify-lead', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw 0;
+        statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
+        formEl.reset();
+        notify?.success?.('Lead enviado correctamente');
+      } catch {
+        statusEl.textContent = 'Error enviando lead.';
+        notify?.error?.('No se pudo enviar el formulario');
+      }
     });
   </script>
 
-  <!-- JS del menú -->
+  <!-- Menú -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
@@ -426,9 +392,7 @@ safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.de
       const closeBtn  = drawer?.querySelector('.drawer-close');
       if (!toggleBtn || !drawer) return;
 
-      const focusableSel = [
-        'a[href]','button:not([disabled])','input','select','textarea','[tabindex]:not([tabindex="-1"])'
-      ].join(',');
+      const focusableSel = ['a[href]','button:not([disabled])','input','select','textarea','[tabindex]:not([tabindex="-1"])'].join(',');
       let lastFocused = null;
 
       const open = () => {
