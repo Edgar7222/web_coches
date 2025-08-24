@@ -4,19 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tu Empresa — Importación y Exportación de Coches Premium</title>
-  <meta name="description" content="Importamos y exportamos coches premium a medida desde Europa y EE.UU. Inspección, logística, matriculación y garantía. Pide presupuesto sin compromiso." />
+  <meta name="description" content="Importamos y exportamos coches premium a medida desde Europa y EE.UU. Inspección, logística, matriculación y garantía. Pide presupuesto sin compromiso.">
 
   <!-- Canonical & Social -->
   <link rel="canonical" href="https://web-coches-eta.vercel.app/">
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Tu Empresa — Coches Premium Importados" />
-  <meta property="og:description" content="Vehículos verificados, importación rápida y garantía europea. Solicita tu coche a medida." />
-  <meta property="og:image" content="https://web-coches-eta.vercel.app/og-image.jpg" />
-  <meta property="og:url" content="https://web-coches-eta.vercel.app/" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Tu Empresa — Coches Premium Importados" />
-  <meta name="twitter:description" content="Vehículos verificados, importación rápida y garantía europea. Solicita tu coche a medida." />
-  <meta name="twitter:image" content="https://web-coches-eta.vercel.app/og-image.jpg" />
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tu Empresa — Coches Premium Importados">
+  <meta property="og:description" content="Vehículos verificados, importación rápida y garantía europea. Solicita tu coche a medida.">
+  <meta property="og:image" content="https://web-coches-eta.vercel.app/og-image.jpg">
+  <meta property="og:url" content="https://web-coches-eta.vercel.app/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tu Empresa — Coches Premium Importados">
+  <meta name="twitter:description" content="Vehículos verificados, importación rápida y garantía europea. Solicita tu coche a medida.">
+  <meta name="twitter:image" content="https://web-coches-eta.vercel.app/og-image.jpg">
 
   <!-- JSON-LD AutoDealer -->
   <script type="application/ld+json">
@@ -66,18 +66,18 @@
 
     .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
     .drawer-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);opacity:0;transition:opacity .28s ease}
-    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding-top:calc(env(safe-area-inset-top,0px));-webkit-overflow-scrolling:touch;overflow:auto}
+    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding-top:12px;-webkit-overflow-scrolling:touch;overflow:auto;will-change:transform}
     @media (min-width:600px) and (max-width:899px){.drawer-inner{width:420px}}
-    .drawer-top{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:transparent;border:none;backdrop-filter:none;box-shadow:none;z-index:1}
+    .drawer-top{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
     .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
-    .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#0f172a;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+    .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#0f172a;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .drawer-nav{display:flex;flex-direction:column;gap:12px;padding:18px}
     .drawer-link{padding:12px 14px;border-radius:12px;color:var(--text);font-weight:600;border:1px solid transparent}
     .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
     .drawer.open{pointer-events:auto}
     .drawer.open .drawer-inner{transform:translateX(0)}
     .drawer.open .drawer-backdrop{opacity:1}
-    body.nav-open{overflow:hidden}
+    body.nav-open{overflow:hidden;touch-action:none}
 
     /* Buttons & Sections */
     .btn{display:inline-block;padding:12px 22px;border-radius:999px;font-weight:600;transition:.2s}
@@ -196,7 +196,7 @@
       <label for="email">Email</label>
       <input type="email" id="email" name="email" placeholder="Email" required maxlength="254">
       <label for="telefono">Teléfono (opcional)</label>
-      <input type="tel" id="telefono" name="telefono" placeholder="Teléfono (opcional)" pattern="^[0-9 +()\-]{7,}$">
+      <input type="tel" id="telefono" name="telefono" placeholder="Teléfono (opcional)" pattern="^[0-9 +()\\-]{7,}$">
       <label for="mensaje">Mensaje</label>
       <textarea id="mensaje" name="mensaje" placeholder="Mensaje" required minlength="10" maxlength="2000"></textarea>
 
@@ -218,9 +218,7 @@
   <!-- FAB móvil -->
   <div class="fab" aria-label="Acciones rápidas">
     <a href="#contacto" aria-label="Ir a contacto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z" stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z" stroke-linejoin="round" stroke-linecap="round"/></svg>
       Contacto
     </a>
     <a class="secondary" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20coches%20premium" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">
@@ -233,7 +231,7 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // --- Supabase (solo lectura pública de coches) ---
+    // --- Supabase (lectura pública) ---
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -245,7 +243,6 @@
       const km      = (c.km ?? 0).toLocaleString("es-ES");
       const resumen = [km && `${km} km`, c.combustible, c.caja].filter(Boolean).join(" · ");
       const precio  = c.precio_objetivo ? `${Number(c.precio_objetivo).toLocaleString("es-ES")} €` : "Bajo pedido";
-
       return `
         <article class="card" role="listitem">
           <a href="car.html?id=${encodeURIComponent(c.id)}" aria-label="Ver ${sanitizeHTML(titulo)}">
@@ -256,30 +253,20 @@
             <span>${sanitizeHTML(resumen)}</span><br>
             <span class="tag" style="color:#E5E7EB">${sanitizeHTML(precio)}</span>
           </div>
-        </article>
-      `;
+        </article>`;
     };
 
     async function cargarCoches() {
       if (!grid) return;
       grid.innerHTML = "<p style='color:var(--muted)'>Cargando coches…</p>";
-
       const { data, error } = await supabase
         .from("cars")
         .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
         .in("estado_publicacion", ["publicado", "disponible"])
         .order("created_at", { ascending: false })
         .limit(12);
-
-      if (error) {
-        console.error(error);
-        grid.innerHTML = `<p style="color:#FCA5A5">Error cargando coches.</p>`;
-        return;
-      }
-      if (!data || data.length === 0) {
-        grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`;
-        return;
-      }
+      if (error) { console.error(error); grid.innerHTML = `<p style="color:#FCA5A5">Error cargando coches.</p>`; return; }
+      if (!data?.length) { grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`; return; }
       grid.innerHTML = data.map(cardHTML).join("");
     }
 
@@ -297,46 +284,39 @@
       if (fd.get("company")) { btn.disabled = false; return; } // honeypot
 
       const payload = {
-        nombre: (fd.get("nombre") || "").toString().trim(),
-        email: (fd.get("email") || "").toString().trim(),
-        telefono: (fd.get("telefono") || "").toString().trim() || null,
-        mensaje: (fd.get("mensaje") || "").toString().trim(),
-        coche_interes: (fd.get("coche_interes") || "").toString().trim() || null,
-        car_id: (fd.get("car_id") || "").toString().trim() || null,
+        nombre: (fd.get("nombre")||"").toString().trim(),
+        email: (fd.get("email")||"").toString().trim(),
+        telefono: (fd.get("telefono")||"").toString().trim() || null,
+        mensaje: (fd.get("mensaje")||"").toString().trim(),
+        coche_interes: (fd.get("coche_interes")||"").toString().trim() || null,
+        car_id: (fd.get("car_id")||"").toString().trim() || null,
         page_url: location.href,
         user_agent: navigator.userAgent
       };
 
-      // Validación rápida en front
-      if (!Validator.required(payload.nombre, 2)) { statusEl.textContent = "Nombre inválido."; btn.disabled = false; return; }
-      if (!Validator.email(payload.email)) { statusEl.textContent = "Email inválido."; btn.disabled = false; return; }
-      if (!Validator.required(payload.mensaje, 10)) { statusEl.textContent = "Mensaje demasiado corto."; btn.disabled = false; return; }
-      if (payload.telefono && !Validator.phone(payload.telefono)) { statusEl.textContent = "Teléfono inválido."; btn.disabled = false; return; }
+      if (!Validator.required(payload.nombre, 2)){ statusEl.textContent="Nombre inválido."; btn.disabled=false; return; }
+      if (!Validator.email(payload.email)){ statusEl.textContent="Email inválido."; btn.disabled=false; return; }
+      if (!Validator.required(payload.mensaje, 10)){ statusEl.textContent="Mensaje demasiado corto."; btn.disabled=false; return; }
+      if (payload.telefono && !Validator.phone(payload.telefono)){ statusEl.textContent="Teléfono inválido."; btn.disabled=false; return; }
 
       statusEl.textContent = "Enviando...";
-      try {
-        const res = await fetch("/api/notify-lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("Error en el envío");
+      try{
+        const res = await fetch("/api/notify-lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+        if(!res.ok) throw new Error("Error en el envío");
         statusEl.textContent = "¡Gracias! Te contactaremos en breve.";
         form.reset();
         notify?.success?.("Lead enviado correctamente");
-      } catch (err) {
+      }catch(err){
         console.error(err);
         statusEl.textContent = "No se pudo enviar. Prueba de nuevo.";
         notify?.error?.("No se pudo enviar el formulario");
-      } finally {
-        btn.disabled = false;
-      }
+      }finally{ btn.disabled=false; }
     });
 
     cargarCoches();
   </script>
 
-  <!-- Menú hamburguesa -->
+  <!-- Menú hamburguesa (unificado + reset entre páginas/iOS) -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
@@ -363,10 +343,17 @@
       };
       const isOpen = () => drawer.classList.contains('open');
 
-      toggleBtn.addEventListener('click', () => isOpen() ? close() : open());
-      closeBtn?.addEventListener('click', close);
-      backdrop?.addEventListener('click', close);
+      toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
+      closeBtn?.addEventListener('click', close, { passive:true });
+      backdrop?.addEventListener('click', close, { passive:true });
 
+      // Cerrar cuando se hace click en un enlace (incluye anchors)
+      drawer.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href]');
+        if (a) close();
+      });
+
+      // Accesibilidad: trap focus
       window.addEventListener('keydown', (e) => {
         if (!isOpen()) return;
         if (e.key === 'Escape') { e.preventDefault(); close(); }
@@ -378,10 +365,13 @@
           else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
         }
       });
-      drawer.addEventListener('click', (e) => {
-        const a = e.target.closest('a[href^="#"]');
-        if (a) close();
-      });
+
+      // --- Resets anti “recursividad”/bfcache (iOS) ---
+      const resetDrawerState = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
+      window.addEventListener('pageshow', resetDrawerState);   // al volver con atrás (bfcache)
+      window.addEventListener('pagehide', resetDrawerState);   // iOS Safari
+      window.addEventListener('beforeunload', resetDrawerState);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) resetDrawerState(); });
     })();
   </script>
 </body>
