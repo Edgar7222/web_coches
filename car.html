@@ -20,8 +20,6 @@
   <meta name="twitter:image" id="twitter-image" content="https://tudominio.com/og-car.jpg" />
 
   <link id="canonical" rel="canonical" href="https://tudominio.com/car.html" />
-
-  <!-- JSON-LD dinámico -->
   <script id="car-jsonld" type="application/ld+json"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -30,14 +28,13 @@
       --primary:#6366F1; --primary-dark:#4F46E5;
       --bg:#111827; --text:#F9FAFB; --muted:#9CA3AF;
       --card:#1F2937; --border:#374151; --shadow:0 8px 24px rgba(0,0,0,.35);
-
       --nav-h:64px; --nav-bg:#0f172a; --nav-border:rgba(255,255,255,.06);
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
-    /* ===== Header ===== */
+    /* Header */
     .site-header{
       position:sticky; top:0; z-index:50;
       background:var(--nav-bg);
@@ -58,7 +55,7 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* ===== Drawer (debajo del header) ===== */
+    /* Drawer: panel y backdrop empiezan debajo del header */
     .drawer{
       position:fixed;
       left:0; right:0;
@@ -84,8 +81,9 @@
       box-shadow:-24px 0 48px rgba(0,0,0,.6);
       transform:translateX(100%); transition:transform .28s ease;
       display:flex; flex-direction:column;
-      -webkit-overflow-scrolling:touch; overflow:auto;
+      overflow:auto; -webkit-overflow-scrolling:touch;
       padding:18px;
+      position:relative;
     }
     @media (min-width:600px) and (max-width:899px){ .drawer-inner{ width:420px } }
     .drawer-nav{display:flex;flex-direction:column;gap:12px}
@@ -98,28 +96,19 @@
     .drawer.open .drawer-backdrop{ opacity:1; }
     body.nav-open{ overflow:hidden; }
 
-    /* Botón cerrar flotante (solo el pill, no cubre la barra) */
+    /* Botón cerrar: dentro del panel, sin blur */
     .drawer-close{
-      position:fixed;
-      top:calc(var(--nav-h) + 10px);
-      right:10px;
+      position:absolute;
+      top:10px; right:10px;
       width:40px; height:40px;
+      display:flex; align-items:center; justify-content:center;
       border-radius:12px;
       border:1px solid var(--nav-border);
-      background:rgba(15,23,42,.92);
+      background:#111827;           /* sólido, sin backdrop-filter */
       color:#e5e7eb; cursor:pointer;
-      -webkit-backdrop-filter:blur(6px);
-      backdrop-filter:blur(6px);
-      box-shadow:0 6px 24px rgba(0,0,0,.35);
-      z-index:65;
-      opacity:0; transform:scale(.96);
-      pointer-events:none;
-      transition:opacity .18s ease, transform .18s ease;
+      box-shadow:none;               /* sin halo */
     }
-    .drawer.open + .drawer-backdrop + .drawer-close,
-    .drawer.open ~ .drawer-close{ /* compat */
-      opacity:1; transform:scale(1); pointer-events:auto;
-    }
+    .drawer-close:active{transform:scale(.98)}
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -130,20 +119,17 @@
     .slider-track{display:flex;transition:transform .35s ease-out}
     .slide{min-width:100%;height:clamp(260px,48vw,520px);object-fit:cover;user-select:none;pointer-events:none;background:#0b0b0b}
 
-    /* Flechas */
     .nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;border:none;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);cursor:pointer;transition:transform .2s, background .2s, opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.5);color:#fff;z-index:5;opacity:.95}
     .nav-btn:hover{background:rgba(0,0,0,.7);transform:translateY(-50%) scale(1.06)}
     .nav-prev{left:18px} .nav-next{right:18px}
     .nav-btn svg{width:28px;height:28px;stroke:#fff;stroke-width:2.5;fill:none}
     .nav-btn:disabled{opacity:0;pointer-events:none}
 
-    /* Dots + contador */
     .dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
     .dot{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.55);transition:transform .2s,background .2s;cursor:pointer}
     .dot:hover{transform:scale(1.15)} .dot.active{background:#fff}
     .counter{position:absolute; right:12px; bottom:12px; z-index:3; background:rgba(0,0,0,.55); color:#fff; font-weight:700; padding:6px 10px; border-radius:999px; backdrop-filter:blur(2px); font-size:.9rem;}
 
-    /* Fichas y formularios */
     .specs, form{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px;margin:22px 0;border:1px solid var(--border)}
     .specs p{margin:8px 0;color:rgba(249,250,251,.9)}
     .specs b{color:#E5E7EB}
@@ -161,7 +147,6 @@
     button:hover{filter:brightness(1.05)} button:active{transform:translateY(1px)}
     #form-status{color:var(--muted);margin-top:6px}
 
-    /* Sticky CTA móvil */
     .sticky-cta{position:fixed; left:0; right:0; bottom:0; z-index:40; background:rgba(17,24,39,.9); backdrop-filter:blur(8px); border-top:1px solid rgba(255,255,255,.06); display:none; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px;}
     .sticky-cta b{color:#fff}
     .sticky-cta .price{color:#E5E7EB; font-weight:700}
@@ -172,7 +157,7 @@
 </head>
 <body>
 
-  <!-- Header con hamburguesa -->
+  <!-- Header -->
   <header class="site-header" role="banner">
     <div class="nav-wrap">
       <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
@@ -188,10 +173,11 @@
       </nav>
     </div>
 
-    <!-- Drawer: panel y backdrop empiezan debajo del header -->
+    <!-- Drawer (debajo del header) -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <nav class="drawer-nav">
+        <button class="drawer-close" aria-label="Cerrar menú">✕</button>
+        <nav class="drawer-nav" aria-label="Navegación móvil">
           <a href="/#servicios" class="drawer-link">Servicios</a>
           <a href="/#stock" class="drawer-link">Stock</a>
           <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
@@ -200,8 +186,6 @@
       </div>
       <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
     </div>
-    <!-- Botón de cierre flotante (pill pequeño) -->
-    <button class="drawer-close" aria-label="Cerrar menú">✕</button>
   </header>
 
   <main class="container" id="car-container">
@@ -286,13 +270,7 @@
         "brand": data.marca,
         "model": data.modelo,
         "sku": data.id,
-        "offers": {
-          "@type": "Offer",
-          "price": data.precio_objetivo || "0",
-          "priceCurrency": "EUR",
-          "availability": "https://schema.org/InStock",
-          "url": canonicalHref
-        }
+        "offers": {"@type":"Offer","price": data.precio_objetivo || "0","priceCurrency":"EUR","availability":"https://schema.org/InStock","url": canonicalHref}
       };
       document.getElementById("car-jsonld").textContent = JSON.stringify(jsonld);
 
@@ -432,13 +410,13 @@
     });
   </script>
 
-  <!-- JS del menú hamburguesa -->
+  <!-- JS del menú -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
       const drawer    = document.getElementById('mobile-drawer');
-      const backdrop  = document.querySelector('.drawer-backdrop');
-      const closeBtn  = document.querySelector('.drawer-close');
+      const backdrop  = drawer?.querySelector('.drawer-backdrop');
+      const closeBtn  = drawer?.querySelector('.drawer-close');
       if (!toggleBtn || !drawer) return;
 
       const focusableSel = [
