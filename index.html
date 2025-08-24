@@ -52,7 +52,7 @@
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
-    a{color:inherit}
+    a{color:inherit;text-decoration:none}
 
     /* ===== Header + Drawer ===== */
     .site-header{
@@ -67,13 +67,13 @@
       display:flex; align-items:center; justify-content:space-between; gap:12px;
     }
     .brand{
-      color:#fff; font-weight:800; letter-spacing:.2px; text-decoration:none;
+      color:#fff; font-weight:800; letter-spacing:.2px;
       font-size:clamp(1.05rem,2vw,1.2rem);
     }
     /* desktop */
     .nav-desktop{ display:none; gap:16px; align-items:center; }
     .nav-desktop a{
-      text-decoration:none; color:rgba(249,250,251,.92); font-weight:600;
+      color:rgba(249,250,251,.92); font-weight:600;
       padding:8px 10px; border-radius:10px; transition:background .2s,color .2s;
     }
     .nav-desktop a:hover{ color:#fff; background:rgba(255,255,255,.06); }
@@ -94,36 +94,45 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){ transform:translateY(-6px) rotate(-45deg);}
 
     /* Drawer móvil */
-    .drawer{
-      position:fixed; inset:0; display:grid; grid-template-columns:1fr;
-      pointer-events:none; z-index:60;
-    }
-    .drawer-inner{
-      align-self:start; justify-self:end;
-      width:min(92vw,360px); height:100vh; background:#0b1220;
-      border-left:1px solid var(--nav-border);
-      box-shadow:0 10px 40px rgba(0,0,0,.6);
-      transform:translateX(100%); transition:transform .28s ease; display:flex; flex-direction:column;
-    }
-    .drawer-header{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:14px 16px; border-bottom:1px solid var(--nav-border);
-      background:rgba(15,23,42,.9);
-    }
-    .drawer-title{font-weight:700;color:#fff}
-    .drawer-close{
-      width:36px;height:36px;border-radius:10px;border:1px solid var(--nav-border);background:transparent;color:#e5e7eb;cursor:pointer
-    }
-    .drawer-nav{ display:flex; flex-direction:column; gap:10px; padding:18px; }
-    .drawer-link{
-      padding:12px 14px; border-radius:12px; text-decoration:none;
-      color:var(--text); font-weight:600; background:transparent; border:1px solid transparent;
-    }
-    .drawer-link:hover{ background:rgba(255,255,255,.06); border-color:var(--nav-border); color:#fff; }
+    .drawer{ position:fixed; inset:0; display:grid; grid-template-columns:1fr; pointer-events:none; z-index:60; }
     .drawer-backdrop{
       position:fixed; inset:0; background:rgba(2,6,23,.55);
       opacity:0; transition:opacity .28s ease;
     }
+    .drawer-inner{
+      align-self:start; justify-self:end;
+      width:min(92vw,360px); height:100dvh; background:#0b1220;
+      border-left:1px solid var(--nav-border);
+      box-shadow:0 10px 40px rgba(0,0,0,.6);
+      transform:translateX(100%); transition:transform .28s ease;
+      display:flex; flex-direction:column;
+      padding-top:calc(env(safe-area-inset-top,0px));
+      -webkit-overflow-scrolling:touch; overflow:auto;
+    }
+    /* ancho tablet */
+    @media (min-width:600px) and (max-width:899px){
+      .drawer-inner{ width:420px; }
+    }
+    .drawer-top{
+      position:sticky; top:0;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 16px calc(12px + env(safe-area-inset-top,0px));
+      padding-top:calc(12px + env(safe-area-inset-top,0px));
+      background:linear-gradient(180deg, rgba(15,23,42,0.98), rgba(15,23,42,0.92));
+      border-bottom:1px solid var(--nav-border);
+      backdrop-filter:blur(8px);
+      z-index:1;
+    }
+    .drawer-title{ color:#fff; font-weight:800; letter-spacing:.2px; }
+    .drawer-close{
+      width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:transparent;color:#e5e7eb;cursor:pointer;
+    }
+    .drawer-nav{ display:flex; flex-direction:column; gap:12px; padding:18px; }
+    .drawer-link{
+      padding:12px 14px; border-radius:12px;
+      color:var(--text); font-weight:600; border:1px solid transparent;
+    }
+    .drawer-link:hover{ background:rgba(255,255,255,.06); border-color:var(--nav-border); color:#fff; }
     .drawer.open{ pointer-events:auto; }
     .drawer.open .drawer-inner{ transform:translateX(0); }
     .drawer.open .drawer-backdrop{ opacity:1; }
@@ -135,7 +144,7 @@
     }
 
     /* Botones */
-    .btn{display:inline-block;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:600;transition:.2s}
+    .btn{display:inline-block;padding:12px 22px;border-radius:999px;font-weight:600;transition:.2s}
     .btn.primary{background:var(--primary);color:#fff;box-shadow:0 6px 18px rgba(99,102,241,.25)}
     .btn.primary:hover{background:var(--primary-dark)}
 
@@ -196,12 +205,12 @@
 
     /* === FAB (CTA flotante móvil) === */
     .fab{
-      position:fixed; right:16px; bottom:16px; z-index:40; display:none;
+      position:fixed; right:16px; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:40; display:none;
       gap:12px; align-items:center;
     }
     .fab a{
       display:flex; align-items:center; gap:8px;
-      background:var(--primary); color:#fff; text-decoration:none;
+      background:var(--primary); color:#fff;
       padding:12px 16px; border-radius:999px; font-weight:700;
       box-shadow:0 8px 24px rgba(99,102,241,.35);
     }
@@ -234,15 +243,16 @@
     <!-- Drawer móvil -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <div class="drawer-header">
+        <div class="drawer-top">
           <span class="drawer-title">Menú</span>
-          <button class="drawer-close" aria-label="Cerrar">✕</button>
+          <button class="drawer-close" aria-label="Cerrar menú">✕</button>
         </div>
         <nav class="drawer-nav">
           <a href="#servicios" class="drawer-link">Servicios</a>
           <a href="#stock" class="drawer-link">Stock</a>
           <a href="#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
         </nav>
+        <div style="height:calc(12px + env(safe-area-inset-bottom,0px))"></div>
       </div>
       <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
     </div>
@@ -289,10 +299,8 @@
       <label for="mensaje">Mensaje</label>
       <textarea id="mensaje" name="mensaje" placeholder="Mensaje" required></textarea>
 
-      <!-- Hidden fields -->
       <input type="hidden" name="car_id" id="car_id">
       <input type="hidden" name="coche_interes" id="coche_interes">
-      <!-- honeypot -->
       <input type="text" name="company" autocomplete="off" tabindex="-1" style="position:absolute; left:-10000px;">
 
       <button type="submit" id="submit-btn">Enviar</button>
@@ -459,6 +467,8 @@
       toggleBtn.addEventListener('click', () => isOpen() ? close() : open());
       closeBtn?.addEventListener('click', close);
       backdrop?.addEventListener('click', close);
+
+      // Accesibilidad: Escape y Tab trapping
       window.addEventListener('keydown', (e) => {
         if (!isOpen()) return;
         if (e.key === 'Escape') { e.preventDefault(); close(); }
@@ -470,6 +480,7 @@
           else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
         }
       });
+      // Cerrar al navegar
       drawer.addEventListener('click', (e) => {
         const a = e.target.closest('a[href^="#"]');
         if (a) close();
