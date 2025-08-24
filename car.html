@@ -20,6 +20,7 @@
   <meta name="twitter:image" id="twitter-image" content="https://tudominio.com/og-car.jpg" />
 
   <link id="canonical" rel="canonical" href="https://tudominio.com/car.html" />
+  <script src="js/utils.js"></script>
   <script id="car-jsonld" type="application/ld+json"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -356,15 +357,21 @@
       }
 
       /* Specs + Descripción */
-      $('#car-specs').innerHTML = `
-        <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
-        <p><b>Combustible:</b> ${data.combustible ?? '-'}</p>
-        <p><b>Caja:</b> ${data.caja ?? '-'}</p>
-        <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+' €' : 'Bajo pedido'}</p>
-        ${data.extras ? `<p><b>Extras:</b> ${data.extras}</p>` : ''}
-        <h3>Descripción</h3>
-        <div class="desc">${(data.descripcion && data.descripcion.trim()) ? data.descripcion.trim() : 'Sin descripción'}</div>
-      `;
+      // ✅ DESPUÉS (seguro) - Reemplaza la sección completa
+const specsEl = $('#car-specs');
+safeInnerHTML(specsEl, `
+  <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
+  <p><b>Combustible:</b> ${sanitizeHTML(data.combustible) ?? '-'}</p>
+  <p><b>Caja:</b> ${sanitizeHTML(data.caja) ?? '-'}</p>
+  <p><b>Precio:</b> ${data.precio_objetivo ? Number(data.precio_objetivo).toLocaleString('es-ES')+' €' : 'Bajo pedido'}</p>
+  ${data.extras ? `<p><b>Extras:</b> ${sanitizeHTML(data.extras)}</p>` : ''}
+  <h3>Descripción</h3>
+  <div class="desc"></div>
+`);
+
+// ✅ Insertar descripción de forma segura
+const descDiv = specsEl.querySelector('.desc');
+safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.descripcion.trim() : 'Sin descripción');
 
       /* Sticky CTA */
       const bar = document.getElementById('sticky-cta');
