@@ -264,7 +264,7 @@
     const grid = document.getElementById("stock-grid");
     const FALLBACK = "https://picsum.photos/seed/car/1000/700";
 
-    // Obtiene la portada de forma robusta: cover (view) > imagenes[0] > string "{url}" > null
+    // helper para portada
     function coverOf(rec){
       if (rec.cover) return rec.cover;
       if (Array.isArray(rec.imagenes) && rec.imagenes.length) return rec.imagenes[0];
@@ -301,30 +301,31 @@
       if (!grid) return;
       grid.innerHTML = "<p style='color:var(--muted)'>Cargando coches…</p>";
 
-      // 1) Intentar contra la VIEW con 'cover'
+      // 1) Intento con la VIEW
       let { data, error } = await supabase
         .from("cars_with_cover")
         .select("id, marca, modelo, version, anio, km, combustible, caja, cover, precio_objetivo, created_at, estado_publicacion")
+        // tolerante: publicados, disponibles o NULL
         .or("estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null")
         .order("created_at", { ascending: false })
         .limit(12);
 
-      // 2) Si la VIEW no existe, fallback a la TABLA original
-      if (error && (error.code === "42P01" || /does not exist/i.test(error.message))) {
-        ({ data, error } = await supabase
+      // 2) Fallback si hay error **o si la view devuelve 0**
+      if (error || !(data && data.length)) {
+        if (error) console.warn("[HOME] usando fallback a 'cars' por error:", error.message);
+        else console.warn("[HOME] 'cars_with_cover' vacío, usando fallback a 'cars'.");
+
+        const fb = await supabase
           .from("cars")
           .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
-          .or("estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null")
+          // en fallback NO filtro por estado para no quedarnos sin coches
           .order("created_at", { ascending: false })
-          .limit(12)
-        );
+          .limit(12);
+
+        if (!fb.error) { data = fb.data; }
+        else { console.error(fb.error); }
       }
 
-      if (error) {
-        console.error(error);
-        grid.innerHTML = `<p style="color:#FCA5A5">Error cargando coches.</p>`;
-        return;
-      }
       if (!data?.length) {
         grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`;
         return;
