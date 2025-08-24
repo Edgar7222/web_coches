@@ -3,12 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <title>Tu Empresa — Importación y Exportación de Coches Premium</title>
   <meta name="description" content="Importamos y exportamos coches premium a medida desde Europa y EE.UU. Inspección, logística, matriculación y garantía. Pide presupuesto sin compromiso.">
+  <meta name="robots" content="index,follow">
 
   <!-- Canonical & Social -->
   <link rel="canonical" href="https://web-coches-eta.vercel.app/">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tu Empresa">
   <meta property="og:title" content="Tu Empresa — Coches Premium Importados">
   <meta property="og:description" content="Vehículos verificados, importación rápida y garantía europea. Solicita tu coche a medida.">
   <meta property="og:image" content="https://web-coches-eta.vercel.app/og-image.jpg">
@@ -17,6 +20,13 @@
   <meta name="twitter:title" content="Tu Empresa — Coches Premium Importados">
   <meta name="twitter:description" content="Vehículos verificados, importación rápida y garantía europea. Solicita tu coche a medida.">
   <meta name="twitter:image" content="https://web-coches-eta.vercel.app/og-image.jpg">
+
+  <!-- Favicons / PWA -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0f172a">
 
   <!-- JSON-LD AutoDealer -->
   <script type="application/ld+json">
@@ -46,11 +56,10 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    html,body{overflow-x:hidden} /* evita scroll horizontal (y que “asome” el drawer) */
     body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
     a{color:inherit;text-decoration:none}
 
-    /* Header + Drawer */
+    /* Header + Drawer (cierra solo con la X) */
     .site-header{position:sticky;top:0;z-index:50;background:var(--nav-bg);border-bottom:1px solid var(--nav-border);backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1200px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -65,28 +74,29 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* Drawer (solo móvil/tablet) */
-    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:100}
-    @media (min-width:900px){ .drawer{display:none !important} } /* <- oculta en escritorio */
-    .drawer-backdrop{display:none} /* sin backdrop visible para que no cierre al tocar fuera */
+    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
+    /* SIN backdrop clicable (no cierra al pulsar fuera) */
+    .drawer-backdrop{display:none}
     .drawer-inner{
       align-self:start;justify-self:end;
-      width:clamp(320px,82vw,520px);
-      height:100svh; height:100dvh; height:100vh;
+      width:clamp(320px,78vw,560px);
+      height:100vh;height:100svh;height:100dvh;
       background:#0b1220;border-left:1px solid var(--nav-border);
       box-shadow:-24px 0 48px rgba(0,0,0,.6);
-      transform:translateX(100%); transition:transform .28s ease; will-change:transform;
-      overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:18px; padding-top:calc(16px + env(safe-area-inset-top,0px));
+      transform:translateX(100%);transition:transform .28s ease;
+      display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch;
+      padding:18px;padding-top:calc(16px + env(safe-area-inset-top,0px));
     }
+    @media (min-width:600px) and (max-width:899px){.drawer-inner{width:min(88vw,560px)}}
     .drawer.open{pointer-events:auto}
     .drawer.open .drawer-inner{transform:translateX(0)}
-    body.nav-open{overflow:hidden;touch-action:none}
+    body.nav-open{overflow:hidden;touch-action:none;overscroll-behavior:contain}
 
-    .drawer-top{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .drawer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
     .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
     .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#111827;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+
+    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding:6px 0}
     .drawer-link{padding:12px 14px;border-radius:12px;color:var(--text);font-weight:600;border:1px solid transparent}
     .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
 
@@ -222,7 +232,9 @@
   </section>
 
   <!-- FOOTER -->
-  <footer>© 2025 Tu Empresa · Importación y Exportación de Coches</footer>
+  <footer>
+    © 2025 Tu Empresa · Importación y Exportación de Coches
+  </footer>
 
   <!-- FAB móvil -->
   <div class="fab" aria-label="Acciones rápidas">
@@ -239,6 +251,8 @@
   <!-- App: Stock + Lead -->
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // Supabase (lectura pública)
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -277,7 +291,7 @@
       grid.innerHTML = data.map(cardHTML).join("");
     }
 
-    // Lead
+    // Lead (envío)
     const form = document.getElementById("contact-form");
     const btn = document.getElementById("submit-btn");
     const statusEl = document.getElementById("form-status");
@@ -323,7 +337,7 @@
     cargarCoches();
   </script>
 
-  <!-- Menú hamburguesa -->
+  <!-- Menú (solo X cierra) -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
@@ -352,13 +366,7 @@
       toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
       closeBtn?.addEventListener('click', close, { passive:true });
 
-      // Cerrar al pulsar un enlace del drawer
-      drawer.addEventListener('click', (e) => {
-        const a = e.target.closest('a[href]');
-        if (a) close();
-      });
-
-      // Accesibilidad
+      // Accesibilidad: trap focus + Escape
       window.addEventListener('keydown', (e) => {
         if (!isOpen()) return;
         if (e.key === 'Escape') { e.preventDefault(); close(); }

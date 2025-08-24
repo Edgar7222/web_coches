@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <title id="meta-title">Detalle del vehículo</title>
   <meta name="description" id="meta-description" content="Ficha completa del vehículo premium importado: fotos, vídeo, especificaciones, extras, precio y contacto.">
+  <meta name="robots" content="index,follow">
 
   <!-- Social -->
   <meta property="og:type" content="product">
+  <meta property="og:site_name" content="Tu Empresa">
   <meta property="og:title" id="og-title" content="Coche premium — Detalle">
   <meta property="og:description" id="og-description" content="Fotos, vídeo, especificaciones y precio del coche premium seleccionado.">
   <meta property="og:image" id="og-image" content="https://web-coches-eta.vercel.app/og-car.jpg">
@@ -17,6 +20,17 @@
   <meta name="twitter:description" id="twitter-description" content="Fotos, vídeo, especificaciones y precio del coche premium seleccionado.">
   <meta name="twitter:image" id="twitter-image" content="https://web-coches-eta.vercel.app/og-car.jpg">
   <link id="canonical" rel="canonical" href="https://web-coches-eta.vercel.app/car.html">
+
+  <!-- Product price (se actualiza con JS si hay precio) -->
+  <meta property="product:price:amount" id="meta-price-amount" content="">
+  <meta property="product:price:currency" content="EUR">
+
+  <!-- Favicons / PWA -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0f172a">
 
   <script id="car-jsonld" type="application/ld+json"></script>
 
@@ -34,9 +48,9 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    html,body{overflow-x:hidden}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
+    /* Header + Drawer (idéntico a index; solo X cierra) */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -51,30 +65,23 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* Drawer unificado (móvil/tablet) */
-    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:100}
-    @media (min-width:900px){ .drawer{display:none !important} }
+    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
     .drawer-backdrop{display:none}
     .drawer-inner{
       align-self:start;justify-self:end;
-      width:clamp(320px,82vw,520px);
-      height:100svh; height:100dvh; height:100vh;
+      width:clamp(320px,78vw,560px);
+      height:100vh;height:100svh;height:100dvh;
       background:#0b1220;border-left:1px solid var(--nav-border);
       box-shadow:-24px 0 48px rgba(0,0,0,.6);
-      transform:translateX(100%); transition:transform .28s ease; will-change:transform;
-      overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:18px; padding-top:calc(16px + env(safe-area-inset-top,0px));
+      transform:translateX(100%);transition:transform .28s ease;
+      display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch;
+      padding:18px;padding-top:calc(16px + env(safe-area-inset-top,0px));
     }
+    @media (min-width:600px) and (max-width:899px){.drawer-inner{width:min(88vw,560px)}}
     .drawer.open{pointer-events:auto}
     .drawer.open .drawer-inner{transform:translateX(0)}
-    body.nav-open{overflow:hidden;touch-action:none}
-
-    .drawer-top{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-    .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
+    body.nav-open{overflow:hidden;touch-action:none;overscroll-behavior:contain}
     .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#111827;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding-top:6px}
-    .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
-    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -128,7 +135,7 @@
   <!-- Header -->
   <header class="site-header" role="banner">
     <div class="nav-wrap">
-      <a class="brand" href="/" aria-label="Inicio" aria-current="page">Tu Empresa</a>
+      <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
       <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-controls="mobile-drawer" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </button>
@@ -139,14 +146,14 @@
       </nav>
     </div>
 
-    <!-- Drawer (igual estética que index) -->
+    <!-- Drawer -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <div class="drawer-top">
-          <span class="drawer-title">Menú</span>
+        <div class="drawer-top" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span class="drawer-title" style="color:#fff;font-weight:800;letter-spacing:.2px">Menú</span>
           <button class="drawer-close" aria-label="Cerrar menú">✕</button>
         </div>
-        <nav class="drawer-nav" aria-label="Navegación móvil">
+        <nav class="drawer-nav" aria-label="Navegación móvil" style="display:flex;flex-direction:column;gap:12px">
           <a href="/#servicios" class="drawer-link">Servicios</a>
           <a href="/#stock" class="drawer-link">Stock</a>
           <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
@@ -189,6 +196,7 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+    // Lectura pública del coche
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -230,6 +238,11 @@
         $('#twitter-image').setAttribute("content", data.imagenes[0]);
       }
 
+      // Meta product price
+      const priceMeta = document.getElementById('meta-price-amount');
+      if (priceMeta) priceMeta.setAttribute('content', data.precio_objetivo ? String(Number(data.precio_objetivo)) : "");
+
+      // JSON-LD Product
       const jsonld = {
         "@context":"https://schema.org",
         "@type":"Product",
@@ -357,7 +370,7 @@
     }
     loadCar();
 
-    // Lead
+    // Lead: enviar al backend
     const formEl = document.getElementById('contact-form');
     formEl?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -372,6 +385,7 @@
       };
 
       const statusEl = document.getElementById('form-status');
+
       if (!Validator.required(payload.nombre, 2)) { statusEl.textContent = 'Nombre inválido.'; return; }
       if (!Validator.email(payload.email)) { statusEl.textContent = 'Email inválido.'; return; }
       if (!Validator.required(payload.mensaje, 10)) { statusEl.textContent = 'Mensaje demasiado corto.'; return; }
@@ -394,7 +408,7 @@
     });
   </script>
 
-  <!-- Menú (misma lógica que index: sólo X o enlace) -->
+  <!-- Menú (solo X cierra) -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
@@ -422,11 +436,6 @@
 
       toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
       closeBtn?.addEventListener('click', close, { passive:true });
-
-      drawer.addEventListener('click', (e) => {
-        const a = e.target.closest('a[href]');
-        if (a) close();
-      });
 
       window.addEventListener('keydown', (e) => {
         if (!isOpen()) return;
