@@ -1,99 +1,147 @@
-// api/notify-lead.js
-// Inserta el lead en Supabase desde servidor + envía email con Resend
-import { createClient } from '@supabase/supabase-js';
+// /api/notify-lead.js
+import { createClient } from "@supabase/supabase-js";
 
-const { SUPABASE_URL, SUPABASE_SERVICE_ROLE, RESEND_API_KEY, LEADS_TO_EMAIL, LEADS_FROM_EMAIL, ALLOWED_ORIGIN } = process.env;
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE);
-
-// Rate limit muy simple en memoria (mejor usar Upstash/DB)
-const rate = new Map();
-function allow(ip) {
+// --- Rate limit simple por IP (memoria del runtime) ---
+const hits = new Map();
+function allow(ip, windowMs = 15 * 60 * 1000, max = 20) {
   const now = Date.now();
-  const win = 15 * 60 * 1000; // 15 min
-  const max = 5;
-  const list = rate.get(ip) || [];
-  const clean = list.filter(t => now - t < win);
-  if (clean.length >= max) return false;
-  clean.push(now); rate.set(ip, clean); return true;
+  const arr = (hits.get(ip) || []).filter(t => now - t < windowMs);
+  if (arr.length >= max) return false;
+  arr.push(now);
+  hits.set(ip, arr);
+  return true;
 }
 
-function escapeHtml(s='') {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
-}
-
-function validate(payload) {
+// --- Validaciones ---
+function validate(body) {
   const errs = [];
   const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!payload?.nombre || payload.nombre.trim().length < 2) errs.push('Nombre inválido');
-  if (!payload?.email || !emailRx.test(payload.email)) errs.push('Email inválido');
-  if (!payload?.mensaje || payload.mensaje.trim().length < 10) errs.push('Mensaje demasiado corto');
-  if (payload.telefono) {
-    const d = payload.telefono.replace(/\D/g,'');
-    if (d.length && (d.length < 9 || d.length > 15)) errs.push('Teléfono inválido');
+
+  const nombre = (body?.nombre || "").trim();
+  const email  = (body?.email  || "").trim().toLowerCase();
+  const mensaje= (body?.mensaje|| "").trim();
+  const telefono = (body?.telefono || "").toString();
+
+  if (nombre.length < 2) errs.push("Nombre debe tener al menos 2 caracteres");
+  if (!emailRx.test(email)) errs.push("Email inválido");
+  if (mensaje.length < 10) errs.push("Mensaje mínimo 10 caracteres");
+  if (telefono) {
+    const digits = telefono.replace(/\D/g, "");
+    if (digits.length < 9 || digits.length > 15) errs.push("Teléfono 9-15 dígitos");
   }
   return errs;
 }
 
+function escapeHtml(s=""){
+  return String(s)
+   .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+   .replace(/"/g,"&quot;").replace(/'/g,"&#x27;");
+}
+
 export default async function handler(req, res) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  try {
+    if (req.method !== "POST") return res.status(405).json({ error: "Método no permitido" });
 
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0]
+            || req.headers["x-real-ip"]
+            || req.socket?.remoteAddress
+            || "unknown";
 
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0] || req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
-  if (!allow(ip)) return res.status(429).json({ error: 'Too many requests' });
+    if (!allow(ip)) return res.status(429).json({ error: "Demasiadas solicitudes. Intenta en 15 minutos." });
 
-  const body = req.body ?? {};
-  const errors = validate(body);
-  if (errors.length) return res.status(400).json({ error: 'Bad request', details: errors });
+    const body = typeof req.body === "object" && req.body
+      ? req.body
+      : await new Promise((resolve, reject) => {
+          let raw = "";
+          req.on("data", c => (raw += c));
+          req.on("end", () => {
+            try { resolve(JSON.parse(raw || "{}")); }
+            catch { reject(new Error("JSON inválido")); }
+          });
+          req.on("error", reject);
+        });
 
-  const toInsert = {
-    nombre: body.nombre.trim(),
-    email: body.email.trim().toLowerCase(),
-    telefono: body.telefono?.toString().trim() || null,
-    mensaje: body.mensaje.trim(),
-    coche_interes: body.coche_interes?.toString().trim() || null,
-    page_url: body.page_url?.toString().slice(0,500) || null,
-    user_agent: body.user_agent?.toString().slice(0,500) || null,
-    ip
-  };
+    const errors = validate(body);
+    if (errors.length) return res.status(400).json({ error: "Datos inválidos", details: errors });
 
-  // DB
-  const { data, error } = await supabase.from('leads').insert([toInsert]).select().single();
-  if (error) return res.status(500).json({ error: 'DB insert failed' });
+    // --- Inserción en Supabase con SERVICE ROLE ---
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE,
+      { auth: { persistSession: false } }
+    );
 
-  // Email (opcional)
-  if (!RESEND_API_KEY || !LEADS_TO_EMAIL) return res.status(200).json({ ok: true, id: data?.id, warn: 'Email disabled' });
+    const toInsert = {
+      nombre: (body.nombre||"").trim(),
+      email:  (body.email||"").trim().toLowerCase(),
+      telefono: (body.telefono||null) || null,
+      mensaje: (body.mensaje||"").trim(),
+      coche_interes: (body.coche_interes||null) || null,
+      car_id: (body.car_id||null) || null,
+      page_url: (body.page_url||"").toString().slice(0,500),
+      user_agent: (body.user_agent||"").toString().slice(0,500),
+      ip,
+      estado: "nuevo"
+    };
 
-  const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-      <h2 style="color:#111">🚗 Nuevo lead</h2>
-      <p><b>Nombre:</b> ${escapeHtml(toInsert.nombre)}</p>
-      <p><b>Email:</b> ${escapeHtml(toInsert.email)}</p>
-      ${toInsert.telefono ? `<p><b>Teléfono:</b> ${escapeHtml(toInsert.telefono)}</p>`: ''}
-      ${toInsert.coche_interes ? `<p><b>Coche:</b> ${escapeHtml(toInsert.coche_interes)}</p>`: ''}
-      <p style="white-space:pre-wrap"><b>Mensaje:</b>\n${escapeHtml(toInsert.mensaje)}</p>
-      <hr>
-      <small>📄 ${escapeHtml(toInsert.page_url || '')}<br/>IP: ${escapeHtml(ip)}</small>
-    </div>
-  `;
+    const { data, error } = await supabase
+      .from("leads")
+      .insert([toInsert])
+      .select()
+      .single();
 
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type':'application/json' },
-    body: JSON.stringify({
-      from: LEADS_FROM_EMAIL || 'Leads <onboarding@resend.dev>',
-      to: [LEADS_TO_EMAIL],
-      subject: `🚗 Lead: ${toInsert.nombre}${toInsert.coche_interes ? ` - ${toInsert.coche_interes}` : ''}`,
-      html
-    })
-  });
-  const j = await r.json();
-  if (!r.ok) return res.status(502).json({ error: 'Email failed', details: j });
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return res.status(500).json({ error: "DB insert failed", details: error.message });
+    }
 
-  return res.status(200).json({ ok: true, id: data?.id, emailId: j?.id || null });
+    // --- Email (best-effort: no rompemos si falla) ---
+    let emailSent = false;
+    try {
+      const FROM = process.env.LEADS_FROM_EMAIL || "Leads <onboarding@resend.dev>";
+      const TO   = process.env.LEADS_TO_EMAIL;
+      if (!process.env.RESEND_API_KEY || !TO) throw new Error("Resend config incompleta");
+
+      const html = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+          <h2>🚗 Nuevo lead</h2>
+          <p><b>Nombre:</b> ${escapeHtml(toInsert.nombre)}</p>
+          <p><b>Email:</b> ${escapeHtml(toInsert.email)}</p>
+          ${toInsert.telefono ? `<p><b>Teléfono:</b> ${escapeHtml(toInsert.telefono)}</p>` : ""}
+          ${toInsert.coche_interes ? `<p><b>Coche:</b> ${escapeHtml(toInsert.coche_interes)}</p>` : ""}
+          <p><b>Mensaje:</b></p>
+          <pre style="white-space:pre-wrap">${escapeHtml(toInsert.mensaje)}</pre>
+          <hr/>
+          <small>📄 ${escapeHtml(toInsert.page_url)} | 🕒 ${new Date().toLocaleString("es-ES")}</small>
+        </div>`;
+
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: FROM,
+          to: [TO],
+          subject: `Nuevo lead: ${toInsert.nombre}${toInsert.coche_interes ? " - " + toInsert.coche_interes : ""}`,
+          html
+        })
+      });
+
+      if (!r.ok) {
+        const j = await r.json().catch(()=>null);
+        console.warn("Resend error:", j || r.status);
+      } else {
+        emailSent = true;
+      }
+    } catch (e) {
+      console.warn("Email not sent:", e.message);
+    }
+
+    return res.status(200).json({ success: true, id: data.id, emailSent });
+  } catch (e) {
+    console.error("Handler error:", e);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
 }
