@@ -21,7 +21,7 @@
   <meta name="twitter:image" id="twitter-image" content="https://web-coches-eta.vercel.app/og-car.jpg">
   <link id="canonical" rel="canonical" href="https://web-coches-eta.vercel.app/car.html">
 
-  <!-- Product price (se actualiza con JS si hay precio) -->
+  <!-- Product price -->
   <meta property="product:price:amount" id="meta-price-amount" content="">
   <meta property="product:price:currency" content="EUR">
 
@@ -48,7 +48,8 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
+    html,body{overflow-x:hidden}
+    body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55;-webkit-tap-highlight-color:transparent}
 
     /* Header + Drawer (idéntico a index; solo X cierra) */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
@@ -81,7 +82,20 @@
     .drawer.open{pointer-events:auto}
     .drawer.open .drawer-inner{transform:translateX(0)}
     body.nav-open{overflow:hidden;touch-action:none;overscroll-behavior:contain}
+    @media (min-width:900px){ #mobile-drawer{display:none} }
+
+    .drawer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
     .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#111827;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding:6px 0}
+    .drawer-link{padding:12px 14px;border-radius:12px;color:var(--text);font-weight:600;border:1px solid transparent}
+    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+
+    /* Botón pill reutilizable */
+    .btn{display:inline-block;padding:12px 22px;border-radius:999px;font-weight:700;transition:.2s;text-decoration:none}
+    .btn.primary{background:var(--primary);color:#fff;box-shadow:0 6px 18px rgba(99,102,241,.25)}
+    .btn.primary:hover{background:var(--primary-dark)}
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -89,7 +103,7 @@
     /* Galería */
     .gallery{position:relative;overflow:hidden;border-radius:16px;background:#000;box-shadow:var(--shadow);margin:18px 0 28px}
     .slider-track{display:flex;transition:transform .35s ease-out;will-change:transform}
-    .slide{min-width:100%;height:clamp(260px,48vw,520px);object-fit:cover;user-select:none;pointer-events:none;background:#0b0b0b}
+    .slide{min-width:100%;height:clamp(260px,48vw,520px);object-fit:cover;user-select:none;background:#0b0b0b}
 
     .nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;border:none;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);cursor:pointer;transition:transform .2s, background .2s, opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.5);color:#fff;z-index:2;opacity:.95}
     .nav-btn:hover{background:rgba(0,0,0,.7);transform:translateY(-50%) scale(1.06)}
@@ -112,31 +126,8 @@
 
     form h2{margin:0 0 8px;color:#fff}
     label{font-weight:600;display:block;margin-top:10px;color:#E5E7EB}
-
-    /* ← cambio aquí */
-    input,textarea{
-      width:100%;
-      padding:12px 14px;
-      margin:6px 0 12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      font:inherit;
-      background:#0B1220;
-      color:var(--text);               /* texto blanco (antes había un typo) */
-      caret-color:#fff;
-      transition:border .15s, box-shadow .15s;
-    }
-    input::placeholder, textarea::placeholder{
-      color:rgba(255,255,255,.75);     /* placeholder claro */
-    }
-    /* fix autocompletado */
-    input:-webkit-autofill,
-    textarea:-webkit-autofill{
-      -webkit-text-fill-color:#fff !important;
-      -webkit-box-shadow:0 0 0 30px #0B1220 inset !important;
-      box-shadow:0 0 0 30px #0B1220 inset !important;
-    }
-
+    input,textarea{width:100%;padding:12px 14px;margin:6px 0 12px;border:1px solid var(--border);border-radius:12px;font:inherit;background:#0B1220;color:#fff;transition:border .15s, box-shadow .15s}
+    input::placeholder, textarea::placeholder{color:var(--muted)}
     input:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.25)}
     button{background:var(--primary);color:#fff;border:none;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer;transition:filter .2s, transform .05s;box-shadow:0 6px 18px rgba(99,102,241,.25)}
     button:hover{filter:brightness(1.05)} button:active{transform:translateY(1px)}
@@ -172,11 +163,11 @@
     <!-- Drawer -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <div class="drawer-top" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <span class="drawer-title" style="color:#fff;font-weight:800;letter-spacing:.2px">Menú</span>
+        <div class="drawer-top">
+          <span class="drawer-title">Menú</span>
           <button class="drawer-close" aria-label="Cerrar menú">✕</button>
         </div>
-        <nav class="drawer-nav" aria-label="Navegación móvil" style="display:flex;flex-direction:column;gap:12px">
+        <nav class="drawer-nav" aria-label="Navegación móvil">
           <a href="/#servicios" class="drawer-link">Servicios</a>
           <a href="/#stock" class="drawer-link">Stock</a>
           <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
@@ -219,7 +210,6 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // Lectura pública del coche
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -261,11 +251,9 @@
         $('#twitter-image').setAttribute("content", data.imagenes[0]);
       }
 
-      // Meta product price
       const priceMeta = document.getElementById('meta-price-amount');
       if (priceMeta) priceMeta.setAttribute('content', data.precio_objetivo ? String(Number(data.precio_objetivo)) : "");
 
-      // JSON-LD Product
       const jsonld = {
         "@context":"https://schema.org",
         "@type":"Product",
@@ -353,7 +341,7 @@
         if (url.endsWith('.mp4')) {
           videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:16px;max-height:480px;box-shadow:var(--shadow)"></video>`;
         } else {
-          videoBox.innerHTML = `<iframe src="${url}" allowfullscreen loading="lazy" style="width:100%;height:420px;border:none;border-radius:16px;box-shadow:var(--shadow)"></iframe>`;
+          videoBox.innerHTML = `<iframe src="${url}" allowfullscreen loading="lazy"></iframe>`;
         }
         videoBox.style.display = '';
       } else {
