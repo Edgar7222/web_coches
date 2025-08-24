@@ -18,12 +18,17 @@
   <meta name="twitter:image" id="twitter-image" content="https://web-coches-eta.vercel.app/og-car.jpg">
   <link id="canonical" rel="canonical" href="https://web-coches-eta.vercel.app/car.html">
 
+  <!-- JSON-LD (rellenamos por JS con schema Car) -->
   <script id="car-jsonld" type="application/ld+json"></script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Performance: Supabase warmup -->
+  <link rel="dns-prefetch" href="https://swzizabjkzllxwbrcsnp.supabase.co">
+  <link rel="preconnect" href="https://swzizabjkzllxwbrcsnp.supabase.co" crossorigin>
 
   <style>
     :root{
@@ -36,7 +41,7 @@
     html{scroll-behavior:smooth}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
-    /* Header + Drawer (match index.html) */
+    /* Header + Drawer (igual que index) */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -51,43 +56,19 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* Drawer sin backdrop, idéntico a index */
-    .drawer{
-      position: fixed;
-      inset: 0;
-      display: grid;
-      grid-template-columns: 1fr;
-      pointer-events: none;
-      z-index: 100;
-    }
-    .drawer-inner{
-      align-self: start;
-      justify-self: end;
-      width: clamp(320px, 78vw, 560px);
-      height: 100vh; height: 100dvh; height: 100svh;
-      background: #0b1220;
-      border-left: 1px solid var(--nav-border);
-      box-shadow: -24px 0 48px rgba(0,0,0,.6);
-      transform: translateX(100%);
-      transition: transform .28s ease;
-      overflow: auto; -webkit-overflow-scrolling: touch;
-      padding: 18px;
-      padding-top: calc(16px + env(safe-area-inset-top, 0px));
-      will-change: transform;
-    }
-    @media (min-width:768px) and (max-width:899px){
-      .drawer-inner{ width: min(88vw,560px); }
-    }
-    .drawer.open{ pointer-events:auto }
-    .drawer.open .drawer-inner{ transform: translateX(0) }
-    body.nav-open{ overflow:hidden; touch-action:none; overscroll-behavior:contain }
-
-    .drawer-top{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;margin:-18px -18px 12px -18px;padding:12px 16px;background:transparent}
-    .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
-    .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#111827;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0);opacity:0;transition:opacity .28s ease}
+    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding:18px;-webkit-overflow-scrolling:touch;overflow:auto;will-change:transform}
+    @media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
     .drawer-nav{display:flex;flex-direction:column;gap:12px}
     .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
     .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+    .drawer.open{ pointer-events:auto }
+    .drawer.open .drawer-inner{ transform:translateX(0) }
+    /* backdrop sin cierre táctil */
+    .drawer.open .drawer-backdrop{ opacity:0 }
+    body.nav-open{ overflow:hidden; touch-action:none }
+    .drawer-close{position:absolute; top:10px; right:10px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid var(--nav-border); background:#111827; color:#e5e7eb; cursor:pointer }
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -95,12 +76,15 @@
     /* Galería */
     .gallery{position:relative;overflow:hidden;border-radius:16px;background:#000;box-shadow:var(--shadow);margin:18px 0 28px}
     .slider-track{display:flex;transition:transform .35s ease-out;will-change:transform}
+    @media (prefers-reduced-motion: reduce){ .slider-track{transition:none} }
     .slide{min-width:100%;height:clamp(260px,48vw,520px);object-fit:cover;user-select:none;pointer-events:none;background:#0b0b0b}
+
     .nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;border:none;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);cursor:pointer;transition:transform .2s, background .2s, opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.5);color:#fff;z-index:2;opacity:.95}
     .nav-btn:hover{background:rgba(0,0,0,.7);transform:translateY(-50%) scale(1.06)}
     .nav-prev{left:18px} .nav-next{right:18px}
     .nav-btn svg{width:28px;height:28px;stroke:#fff;stroke-width:2.5;fill:none}
     .nav-btn:disabled{opacity:0;pointer-events:none}
+
     .dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2}
     .dot{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.55);transition:transform .2s,background .2s;cursor:pointer}
     .dot:hover{transform:scale(1.15)} .dot.active{background:#fff}
@@ -112,7 +96,8 @@
     .specs h3{margin:14px 0 6px;color:#fff;font-size:1.05rem}
     .specs .desc{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);color:rgba(249,250,251,.92);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
 
-    iframe{width:100%;height:420px;border:none;border-radius:16px;box-shadow:var(--shadow);margin:22px 0}
+    lite-youtube{display:block;position:relative;padding-top:56.25%;border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin:22px 0}
+    lite-youtube iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:16px}
 
     form h2{margin:0 0 8px;color:#fff}
     label{font-weight:600;display:block;margin-top:10px;color:#E5E7EB}
@@ -122,6 +107,7 @@
     button{background:var(--primary);color:#fff;border:none;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer;transition:filter .2s, transform .05s;box-shadow:0 6px 18px rgba(99,102,241,.25)}
     button:hover{filter:brightness(1.05)} button:active{transform:translateY(1px)}
     #form-status{color:var(--muted);margin-top:6px}
+    .btn:focus-visible, .drawer-link:focus-visible, .drawer-close:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:12px}
 
     .sticky-cta{position:fixed; left:0; right:0; bottom:0; z-index:40; background:rgba(17,24,39,.9); backdrop-filter:blur(8px); border-top:1px solid rgba(255,255,255,.06); display:none; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px;}
     .sticky-cta b{color:#fff}
@@ -133,13 +119,33 @@
 
   <!-- Utils (defer) -->
   <script src="js/utils.js" defer></script>
+
+  <!-- YouTube Lite (web component mínimo) -->
+  <script>
+    class LiteYT extends HTMLElement{
+      connectedCallback(){
+        const id = this.getAttribute('videoid');
+        const title = this.getAttribute('videotitle') || 'Vídeo';
+        this.style.background = '#000';
+        this.innerHTML = `
+          <button type="button" aria-label="Reproducir vídeo: ${title}" style="cursor:pointer;position:absolute;inset:0;border:0;background:transparent">
+            <img decoding="async" referrerpolicy="no-referrer" alt="${title}" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+            <span style="position:absolute;inset:auto 0 0 0;margin:auto;width:72px;height:52px;border-radius:14px;background:rgba(0,0,0,.55);box-shadow:0 6px 16px rgba(0,0,0,.4)"></span>
+          </button>`;
+        this.querySelector('button').addEventListener('click', ()=>{
+          this.innerHTML = `<iframe title="${title}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>`;
+        }, {once:true});
+      }
+    }
+    customElements.define('lite-youtube', LiteYT);
+  </script>
 </head>
 <body>
 
   <!-- Header -->
   <header class="site-header" role="banner">
     <div class="nav-wrap">
-      <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
+      <a class="brand" href="/" aria-label="Inicio" aria-current="page">Tu Empresa</a>
       <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-controls="mobile-drawer" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </button>
@@ -150,13 +156,10 @@
       </nav>
     </div>
 
-    <!-- Drawer (apariencia igual a index) -->
+    <!-- Drawer -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <div class="drawer-top">
-          <span class="drawer-title">Menú</span>
-          <button class="drawer-close" aria-label="Cerrar menú">✕</button>
-        </div>
+        <button class="drawer-close" aria-label="Cerrar menú">✕</button>
         <nav class="drawer-nav" aria-label="Navegación móvil">
           <a href="/#servicios" class="drawer-link">Servicios</a>
           <a href="/#stock" class="drawer-link">Stock</a>
@@ -164,6 +167,7 @@
         </nav>
         <div style="height:calc(12px + env(safe-area-inset-bottom,0px))"></div>
       </div>
+      <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
     </div>
   </header>
 
@@ -199,7 +203,6 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // Lectura pública del coche
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -207,6 +210,18 @@
     const $ = sel => document.querySelector(sel);
     const params = new URLSearchParams(location.search);
     const carId = params.get('id');
+
+    const prefersReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function youtubeId(u){
+      try{
+        const url = new URL(u);
+        if (url.hostname.includes('youtu.be')) return url.pathname.slice(1);
+        if (url.searchParams.get('v')) return url.searchParams.get('v');
+        const p = url.pathname.split('/');
+        return p[p.length-1];
+      }catch{ return ''; }
+    }
 
     async function loadCar() {
       if (!carId) { document.body.innerHTML = '<p style="padding:24px">Falta el parámetro <b>id</b>.</p>'; return; }
@@ -236,26 +251,35 @@
       document.getElementById('canonical')?.setAttribute('href', canonicalHref);
       document.getElementById('og-url')?.setAttribute('content', canonicalHref);
 
-      if (data.imagenes?.[0]) {
-        $('#og-image').setAttribute("content", data.imagenes[0]);
-        $('#twitter-image').setAttribute("content", data.imagenes[0]);
+      const images = Array.isArray(data.imagenes) ? data.imagenes : [];
+      if (images[0]) {
+        $('#og-image').setAttribute("content", images[0]);
+        $('#twitter-image').setAttribute("content", images[0]);
+        // Preload primera imagen para mejorar LCP
+        const l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'image'; l.href = images[0];
+        document.head.appendChild(l);
       }
 
+      // JSON-LD como Car (Vehicle)
       const jsonld = {
         "@context":"https://schema.org",
-        "@type":"Product",
+        "@type":"Car",
         "name": title,
         "description": data.descripcion || "Vehículo premium disponible.",
-        "image": data.imagenes,
+        "image": images,
         "brand": data.marca,
         "model": data.modelo,
+        "vehicleTransmission": data.caja || "Automatic",
+        "fuelType": data.combustible || "Gasoline",
+        "mileageFromOdometer": {"@type":"QuantitativeValue","value": data.km || 0, "unitCode":"KMT"},
+        "productionDate": data.anio ? String(data.anio) : undefined,
         "sku": data.id,
         "offers": {"@type":"Offer","price": data.precio_objetivo || "0","priceCurrency":"EUR","availability":"https://schema.org/InStock","url": canonicalHref}
       };
       document.getElementById("car-jsonld").textContent = JSON.stringify(jsonld);
 
-      // Galería
-      const images = Array.isArray(data.imagenes) ? data.imagenes : [];
+      /* Galería */
       const gallery = $('#car-gallery');
 
       if (!images.length) {
@@ -293,7 +317,7 @@
         };
 
         let timer = null;
-        const start = () => { if (N <= 1) return; clearInterval(timer); timer = setInterval(()=>set(idx+1), 4000); };
+        const start = () => { if (N <= 1 || prefersReduce) return; clearInterval(timer); timer = setInterval(()=>set(idx+1), 4000); };
         const stop  = () => { if (timer) clearInterval(timer); timer = null; };
 
         prevBtn.onclick = () => { stop(); set(idx - 1); start(); };
@@ -301,18 +325,40 @@
         if (N <= 1) { prevBtn.disabled = true; nextBtn.disabled = true; }
         dots.forEach(d => d.onclick = () => { stop(); set(+d.dataset.i); start(); });
 
+        gallery.addEventListener('mouseenter', stop);
+        gallery.addEventListener('mouseleave', start);
+        document.addEventListener('visibilitychange', () => { document.hidden ? stop() : start(); });
+
+        // Gestos
+        let startX=0, dx=0, touching=false;
+        const onDown = (e)=>{touching=true; startX=(e.touches?.[0].clientX ?? e.clientX); stop();};
+        const onMove = (e)=>{if(!touching) return; const x=(e.touches?.[0].clientX ?? e.clientX); dx=x-startX;};
+        const onUp   = ()=>{if(!touching) return; if(Math.abs(dx)>50) (dx<0?set(idx+1):set(idx-1)); touching=false; dx=0; start();};
+        gallery.addEventListener('touchstart', onDown, {passive:true});
+        gallery.addEventListener('touchmove',  onMove, {passive:true});
+        gallery.addEventListener('touchend',   onUp);
+        gallery.addEventListener('mousedown',  onDown);
+        gallery.addEventListener('mousemove',  onMove);
+        gallery.addEventListener('mouseup',    onUp);
+
         set(0); start();
       }
 
-      // Vídeo
+      /* Vídeo */
       const videoBox = $('#car-video');
-      if (data.video_url && data.video_url.trim()) {
-        let url = data.video_url.trim();
-        if (url.includes('watch?v=')) url = url.replace('watch?v=', 'embed/');
+      const url = (data.video_url || '').trim();
+      if (url) {
         if (url.endsWith('.mp4')) {
           videoBox.innerHTML = `<video src="${url}" controls style="width:100%;border-radius:16px;max-height:480px;box-shadow:var(--shadow)"></video>`;
         } else {
-          videoBox.innerHTML = `<iframe src="${url}" allowfullscreen loading="lazy" style="width:100%;height:420px;border:none;border-radius:16px;box-shadow:var(--shadow)"></iframe>`;
+          const id = youtubeId(url);
+          if (id) {
+            videoBox.innerHTML = `<lite-youtube videoid="${id}" videotitle="${sanitizeHTML(title)}"></lite-youtube>`;
+          } else {
+            // fallback a iframe si no es YouTube reconocible
+            const u = url.includes('watch?v=') ? url.replace('watch?v=', 'embed/') : url;
+            videoBox.innerHTML = `<iframe src="${u}" allowfullscreen loading="lazy" style="width:100%;height:420px;border:none;border-radius:16px;box-shadow:var(--shadow)"></iframe>`;
+          }
         }
         videoBox.style.display = '';
       } else {
@@ -320,7 +366,7 @@
         videoBox.style.display = 'none';
       }
 
-      // Specs + Descripción
+      /* Specs + Descripción */
       const specsEl = $('#car-specs');
       safeInnerHTML(specsEl, `
         <p><b>Kilómetros:</b> ${data.km?.toLocaleString('es-ES') ?? '-'}</p>
@@ -334,7 +380,7 @@
       const descDiv = specsEl.querySelector('.desc');
       safeTextContent(descDiv, (data.descripcion && data.descripcion.trim()) ? data.descripcion.trim() : 'Sin descripción');
 
-      // Sticky CTA
+      /* Sticky CTA */
       const bar = document.getElementById('sticky-cta');
       const priceEl = document.getElementById('sticky-price');
       const titleEl = document.getElementById('sticky-title');
@@ -352,7 +398,7 @@
     }
     loadCar();
 
-    // Lead: enviar al backend
+    // Lead
     const formEl = document.getElementById('contact-form');
     formEl?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -365,7 +411,9 @@
         page_url: location.href,
         user_agent: navigator.userAgent
       };
+
       const statusEl = document.getElementById('form-status');
+
       if (!Validator.required(payload.nombre, 2)) { statusEl.textContent = 'Nombre inválido.'; return; }
       if (!Validator.email(payload.email)) { statusEl.textContent = 'Email inválido.'; return; }
       if (!Validator.required(payload.mensaje, 10)) { statusEl.textContent = 'Mensaje demasiado corto.'; return; }
@@ -388,11 +436,12 @@
     });
   </script>
 
-  <!-- Menú (misma lógica; sólo estética cambiada) -->
+  <!-- Menú (igual que index, sin cierre por backdrop) -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
       const drawer    = document.getElementById('mobile-drawer');
+      const backdrop  = drawer?.querySelector('.drawer-backdrop');
       const closeBtn  = drawer?.querySelector('.drawer-close');
       if (!toggleBtn || !drawer) return;
 
@@ -416,14 +465,12 @@
 
       toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
       closeBtn?.addEventListener('click', close, { passive:true });
-
-      // Cerrar al pulsar un enlace del propio menú
+      // backdrop no cierra
       drawer.addEventListener('click', (e) => {
         const a = e.target.closest('a[href]');
         if (a) close();
       });
 
-      // Accesibilidad (trap focus + Esc)
       window.addEventListener('keydown', (e) => {
         if (!isOpen()) return;
         if (e.key === 'Escape') { e.preventDefault(); close(); }
@@ -436,7 +483,6 @@
         }
       });
 
-      // Resets por bfcache/iOS
       const resetDrawerState = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
       window.addEventListener('pageshow', resetDrawerState);
       window.addEventListener('pagehide', resetDrawerState);

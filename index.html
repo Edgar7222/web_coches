@@ -37,6 +37,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
+  <!-- Performance: Supabase warmup -->
+  <link rel="dns-prefetch" href="https://swzizabjkzllxwbrcsnp.supabase.co">
+  <link rel="preconnect" href="https://swzizabjkzllxwbrcsnp.supabase.co" crossorigin>
+
   <style>
     :root{
       --primary:#6366F1; --primary-dark:#4F46E5;
@@ -46,7 +50,6 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    html,body{max-width:100%; overflow-x:hidden}  /* evita desplazamiento lateral */
     body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
     a{color:inherit;text-decoration:none}
 
@@ -65,29 +68,21 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* Drawer — versión única y sin backdrop/click-out */
-    .drawer{position:fixed; inset:0; z-index:100; pointer-events:none;}
-    .drawer-inner{
-      position:absolute; top:0; right:0;
-      width:clamp(320px,85vw,420px);
-      height:100vh; height:100dvh; height:100svh;
-      background:#0b1220; border-left:1px solid var(--nav-border);
-      box-shadow:-24px 0 48px rgba(0,0,0,.6);
-      transform:translateX(100%); transition:transform .28s ease;
-      display:flex; flex-direction:column; overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:18px; padding-top:calc(12px + env(safe-area-inset-top,0px));
-      pointer-events:auto; /* clicable aunque el contenedor tenga none */
-    }
-    .drawer.open .drawer-inner{ transform:translateX(0) }
-    .drawer-backdrop{ display:none !important } /* fuera la zona opaca */
-    body.nav-open{ overflow:hidden; touch-action:none }
-
-    .drawer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0);opacity:0;transition:opacity .28s ease}
+    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding-top:12px;-webkit-overflow-scrolling:touch;overflow:auto;will-change:transform}
+    @media (min-width:600px) and (max-width:899px){.drawer-inner{width:420px}}
+    .drawer-top{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
     .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
     .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#0f172a;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .drawer-nav{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding:18px}
     .drawer-link{padding:12px 14px;border-radius:12px;color:var(--text);font-weight:600;border:1px solid transparent}
     .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+    .drawer.open{pointer-events:auto}
+    .drawer.open .drawer-inner{transform:translateX(0)}
+    /* backdrop desactivado para que no cierre al tocar fuera */
+    .drawer.open .drawer-backdrop{opacity:0}
+    body.nav-open{overflow:hidden;touch-action:none}
 
     /* Buttons & Sections */
     .btn{display:inline-block;padding:12px 22px;border-radius:999px;font-weight:600;transition:.2s}
@@ -120,6 +115,7 @@
     button{background:var(--primary);color:#fff;border:none;padding:14px 24px;border-radius:999px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 6px 18px rgba(99,102,241,.25)}
     button:hover{background:var(--primary-dark)}
     #form-status{color:var(--muted)}
+    .btn:focus-visible, .drawer-link:focus-visible, .drawer-close:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:12px}
 
     /* Footer */
     footer{background:#0B1220;border-top:1px solid rgba(255,255,255,.06);text-align:center;padding:24px;margin-top:40px;font-size:.9rem;color:var(--muted)}
@@ -165,6 +161,7 @@
         </nav>
         <div style="height:calc(12px + env(safe-area-inset-bottom,0px))"></div>
       </div>
+      <!-- backdrop sin acción de cierre -->
       <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
     </div>
   </header>
@@ -221,7 +218,9 @@
   </section>
 
   <!-- FOOTER -->
-  <footer>© 2025 Tu Empresa · Importación y Exportación de Coches</footer>
+  <footer>
+    © 2025 Tu Empresa · Importación y Exportación de Coches
+  </footer>
 
   <!-- FAB móvil -->
   <div class="fab" aria-label="Acciones rápidas">
@@ -239,7 +238,6 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // --- Supabase (lectura pública) ---
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -254,7 +252,11 @@
       return `
         <article class="card" role="listitem">
           <a href="car.html?id=${encodeURIComponent(c.id)}" aria-label="Ver ${sanitizeHTML(titulo)}">
-            <img src="${imgSrc}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260">
+            <img src="${imgSrc}"
+                 srcset="${imgSrc} 800w, ${imgSrc} 1200w"
+                 sizes="(min-width:900px) 33vw, 100vw"
+                 alt="${sanitizeHTML(titulo)}"
+                 loading="lazy" decoding="async" width="400" height="260">
           </a>
           <div style="padding:10px">
             <b style="color:#fff">${sanitizeHTML(titulo)}</b><br>
@@ -278,7 +280,7 @@
       grid.innerHTML = data.map(cardHTML).join("");
     }
 
-    // --- Lead (envío al backend) ---
+    // Lead
     const form = document.getElementById("contact-form");
     const btn = document.getElementById("submit-btn");
     const statusEl = document.getElementById("form-status");
@@ -289,7 +291,7 @@
       btn.disabled = true;
 
       const fd = new FormData(form);
-      if (fd.get("company")) { btn.disabled = false; return; } // honeypot
+      if (fd.get("company")) { btn.disabled = false; return; }
 
       const payload = {
         nombre: (fd.get("nombre")||"").toString().trim(),
@@ -329,33 +331,54 @@
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
       const drawer    = document.getElementById('mobile-drawer');
+      const backdrop  = drawer?.querySelector('.drawer-backdrop');
       const closeBtn  = drawer?.querySelector('.drawer-close');
       if (!toggleBtn || !drawer) return;
 
+      const focusableSel = ['a[href]','button:not([disabled])','input','select','textarea','[tabindex]:not([tabindex="-1"])'].join(',');
+      let lastFocused = null;
+
       const open = () => {
+        lastFocused = document.activeElement;
         drawer.classList.add('open');
         document.body.classList.add('nav-open');
         toggleBtn.setAttribute('aria-expanded','true');
+        drawer.querySelector(focusableSel)?.focus({preventScroll:true});
       };
       const close = () => {
         drawer.classList.remove('open');
         document.body.classList.remove('nav-open');
         toggleBtn.setAttribute('aria-expanded','false');
+        lastFocused?.focus?.({preventScroll:true});
       };
       const isOpen = () => drawer.classList.contains('open');
 
       toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
       closeBtn?.addEventListener('click', close, { passive:true });
-      // NO cierre por click fuera; NO listener sobre backdrop
+      // backdrop ya no cierra el menú
 
-      window.addEventListener('keydown', (e) => { if (isOpen() && e.key === 'Escape') { e.preventDefault(); close(); } });
+      drawer.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href]');
+        if (a) close();
+      });
 
-      // Resets anti bfcache/iOS
-      const reset = () => close();
-      window.addEventListener('pageshow', reset);
-      window.addEventListener('pagehide', reset);
-      window.addEventListener('beforeunload', reset);
-      document.addEventListener('visibilitychange', () => { if (document.hidden) reset(); });
+      window.addEventListener('keydown', (e) => {
+        if (!isOpen()) return;
+        if (e.key === 'Escape') { e.preventDefault(); close(); }
+        if (e.key === 'Tab') {
+          const f = [...drawer.querySelectorAll(focusableSel)];
+          if (!f.length) return;
+          const first = f[0], last = f[f.length-1];
+          if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        }
+      });
+
+      const resetDrawerState = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
+      window.addEventListener('pageshow', resetDrawerState);
+      window.addEventListener('pagehide', resetDrawerState);
+      window.addEventListener('beforeunload', resetDrawerState);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) resetDrawerState(); });
     })();
   </script>
 </body>
