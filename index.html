@@ -262,16 +262,32 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
     const grid = document.getElementById("stock-grid");
+    const FALLBACK = "https://picsum.photos/seed/car/1000/700";
+
+    // Obtiene la portada de forma robusta: cover (view) > imagenes[0] > string "{url}" > null
+    function coverOf(rec){
+      if (rec.cover) return rec.cover;
+      if (Array.isArray(rec.imagenes) && rec.imagenes.length) return rec.imagenes[0];
+      if (typeof rec.imagenes === "string") {
+        const m = rec.imagenes.match(/^{"?(.+?)"?}$/);
+        if (m) return m[1];
+        return rec.imagenes;
+      }
+      return null;
+    }
+
     const cardHTML = (c) => {
       const titulo  = `${c.marca ?? ""} ${c.modelo ?? ""} ${c.anio ?? ""}`.trim();
-      const imgSrc  = (Array.isArray(c.imagenes) && c.imagenes[0]) ? c.imagenes[0] : "https://picsum.photos/seed/placeholder/800/450";
+      const imgSrc  = coverOf(c) || FALLBACK;
       const km      = (c.km ?? 0).toLocaleString("es-ES");
       const resumen = [km && `${km} km`, c.combustible, c.caja].filter(Boolean).join(" · ");
       const precio  = c.precio_objetivo ? `${Number(c.precio_objetivo).toLocaleString("es-ES")} €` : "Bajo pedido";
       return `
         <article class="card" role="listitem">
           <a href="car.html?id=${encodeURIComponent(c.id)}" aria-label="Ver ${sanitizeHTML(titulo)}">
-            <img src="${imgSrc}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260">
+            <img src="${imgSrc}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260"
+                 referrerpolicy="no-referrer"
+                 onerror="this.onerror=null;this.src='${FALLBACK}'">
           </a>
           <div style="padding:10px">
             <b style="color:#fff">${sanitizeHTML(titulo)}</b><br>
@@ -284,14 +300,35 @@
     async function cargarCoches() {
       if (!grid) return;
       grid.innerHTML = "<p style='color:var(--muted)'>Cargando coches…</p>";
-      const { data, error } = await supabase
-        .from("cars")
-        .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
-        .in("estado_publicacion", ["publicado", "disponible"])
+
+      // 1) Intentar contra la VIEW con 'cover'
+      let { data, error } = await supabase
+        .from("cars_with_cover")
+        .select("id, marca, modelo, version, anio, km, combustible, caja, cover, precio_objetivo, created_at, estado_publicacion")
+        .or("estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null")
         .order("created_at", { ascending: false })
         .limit(12);
-      if (error) { console.error(error); grid.innerHTML = `<p style="color:#FCA5A5">Error cargando coches.</p>`; return; }
-      if (!data?.length) { grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`; return; }
+
+      // 2) Si la VIEW no existe, fallback a la TABLA original
+      if (error && (error.code === "42P01" || /does not exist/i.test(error.message))) {
+        ({ data, error } = await supabase
+          .from("cars")
+          .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
+          .or("estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null")
+          .order("created_at", { ascending: false })
+          .limit(12)
+        );
+      }
+
+      if (error) {
+        console.error(error);
+        grid.innerHTML = `<p style="color:#FCA5A5">Error cargando coches.</p>`;
+        return;
+      }
+      if (!data?.length) {
+        grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`;
+        return;
+      }
       grid.innerHTML = data.map(cardHTML).join("");
     }
 
