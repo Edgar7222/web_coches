@@ -21,7 +21,7 @@
   <meta name="twitter:image" id="twitter-image" content="https://web-coches-eta.vercel.app/og-car.jpg">
   <link id="canonical" rel="canonical" href="https://web-coches-eta.vercel.app/car.html">
 
-  <!-- Product price (se rellena con JS si hay precio) -->
+  <!-- Product price -->
   <meta property="product:price:amount" id="meta-price-amount" content="">
   <meta property="product:price:currency" content="EUR">
 
@@ -48,9 +48,11 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
+    /* ✅ sin scroll horizontal (evita “ver” el panel oculto) */
+    html,body{overflow-x:hidden}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
-    /* Header + Drawer (como index; cierra solo con X) */
+    /* Header + Drawer (idéntico a index; solo X cierra) */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -65,50 +67,30 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    /* === DRAWER: sin "peek", cierra solo con X, estilo unificado === */
-    .drawer{
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 100;
-    }
-    .drawer-backdrop{ display:none !important; }
-
+    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
+    .drawer-backdrop{display:none}
     .drawer-inner{
-      position: fixed;
-      right: 0;
-      top: var(--nav-h);
-      bottom: 0;
-
-      width: clamp(320px, 78vw, 560px);
-      background:#0b1220;
-      border-left:1px solid var(--nav-border);
-
-      transform: translate3d(102%,0,0);
-      transition: transform .28s ease, box-shadow .2s ease;
-      will-change: transform;
-
-      overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:18px;
-
+      align-self:start;justify-self:end;
+      width:clamp(320px,78vw,560px);
+      height:100vh;height:100svh;height:100dvh;
+      background:#0b1220;border-left:1px solid var(--nav-border);
       box-shadow:-24px 0 48px rgba(0,0,0,.6);
+      transform:translateX(100%);transition:transform .28s ease;
+      display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch;
+      padding:18px;padding-top:calc(16px + env(safe-area-inset-top,0px));
     }
-    @media (min-width:600px) and (max-width:899px){.drawer-inner{width:min(88vw,520px)}}
-    .drawer.open{ pointer-events:auto; }
-    .drawer.open .drawer-inner{ transform: translate3d(0,0,0); }
-    .drawer:not(.open) .drawer-inner{ box-shadow:none; }
-
-    .drawer-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-    .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
+    /* ✅ en escritorio no hay drawer */
+    @media (min-width:900px){ .drawer{ display:none !important; } }
+    @media (min-width:600px) and (max-width:899px){.drawer-inner{width:min(88vw,560px)}}
+    .drawer.open{pointer-events:auto}
+    .drawer.open .drawer-inner{transform:translateX(0)}
+    body.nav-open{overflow:hidden;touch-action:none;overscroll-behavior:contain}
     .drawer-close{width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:#111827;color:#e5e7eb;cursor:pointer;display:flex;align-items:center;justify-content:center}
-
-    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding:6px 0 16px}
-    .drawer-nav a,
-    .drawer-nav a:visited{
-      display:block;color:var(--text)!important;text-decoration:none;font-weight:600;
-      padding:12px 14px;border-radius:12px;border:1px solid transparent;
-    }
-    .drawer-nav a:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff!important}
+    .drawer-title{color:#fff;font-weight:800;letter-spacing:.2px}
+    .drawer-nav{display:flex;flex-direction:column;gap:12px}
+    .drawer-link, .drawer-link:link, .drawer-link:visited{color:var(--text)!important;text-decoration:none}
+    .drawer-link{padding:12px 14px;border-radius:12px;font-weight:600;border:1px solid transparent}
+    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -139,7 +121,7 @@
 
     form h2{margin:0 0 8px;color:#fff}
     label{font-weight:600;display:block;margin-top:10px;color:#E5E7EB}
-    input,textarea{width:100%;padding:12px 14px;margin:6px 0 12px;border:1px solid var(--border);border-radius:12px;font:inherit;background:#0B1220;color:var(--text);transition:border .15s, box-shadow .15s}
+    input,textarea{width:100%;padding:12px 14px;margin:6px 0 12px;border:1px solid var(--border);border-radius:12px;font:inherit;background:#0B1220;color:#var(--text);transition:border .15s, box-shadow .15s}
     input::placeholder, textarea::placeholder{color:var(--muted)}
     input:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.25)}
     button{background:var(--primary);color:#fff;border:none;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer;transition:filter .2s, transform .05s;box-shadow:0 6px 18px rgba(99,102,241,.25)}
@@ -176,11 +158,11 @@
     <!-- Drawer -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <div class="drawer-top">
-          <span class="drawer-title">Menú</span>
+        <div class="drawer-top" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span class="drawer-title" style="color:#fff;font-weight:800;letter-spacing:.2px">Menú</span>
           <button class="drawer-close" aria-label="Cerrar menú">✕</button>
         </div>
-        <nav class="drawer-nav" aria-label="Navegación móvil">
+        <nav class="drawer-nav" aria-label="Navegación móvil" style="display:flex;flex-direction:column;gap:12px">
           <a href="/#servicios" class="drawer-link">Servicios</a>
           <a href="/#stock" class="drawer-link">Stock</a>
           <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
@@ -223,7 +205,6 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // Lectura pública del coche
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -265,11 +246,9 @@
         $('#twitter-image').setAttribute("content", data.imagenes[0]);
       }
 
-      // Meta product price
       const priceMeta = document.getElementById('meta-price-amount');
       if (priceMeta) priceMeta.setAttribute('content', data.precio_objetivo ? String(Number(data.precio_objetivo)) : "");
 
-      // JSON-LD Product
       const jsonld = {
         "@context":"https://schema.org",
         "@type":"Product",
