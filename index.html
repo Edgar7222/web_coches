@@ -114,19 +114,27 @@
       .drawer-inner{ width:420px; }
     }
     .drawer-top{
-      position:sticky; top:0;
-      display:flex; align-items:center; justify-content:space-between;
-      padding:12px 16px calc(12px + env(safe-area-inset-top,0px));
-      padding-top:calc(12px + env(safe-area-inset-top,0px));
-      background:linear-gradient(180deg, rgba(15,23,42,0.98), rgba(15,23,42,0.92));
-      border-bottom:1px solid var(--nav-border);
-      backdrop-filter:blur(8px);
-      z-index:1;
-    }
+  position:sticky; top:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px;
+  /* lo importante: sin fondo ni blur ni borde */
+  background:transparent;
+  border:0;
+  backdrop-filter:none;
+  box-shadow:none;
+  z-index:1;
     .drawer-title{ color:#fff; font-weight:800; letter-spacing:.2px; }
     .drawer-close{
-      width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:transparent;color:#e5e7eb;cursor:pointer;;flex:0 0 auto;display:flex;display:flex;justify-content:center;
-    }
+  width:40px; height:40px;
+  flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px;
+  border:1px solid var(--nav-border);
+  background:rgba(15,23,42,.92);       /* el pill solo detrás de la X */
+  backdrop-filter:blur(6px);
+  color:#e5e7eb; cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,0,0,.35);
+}
     .drawer-nav{ display:flex; flex-direction:column; gap:12px; padding:18px; }
     .drawer-link{
       padding:12px 14px; border-radius:12px;
