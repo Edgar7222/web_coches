@@ -62,6 +62,9 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(1){transform:translateY(6px) rotate(45deg)}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(2){opacity:0}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    /* tap highlight SOLO para botones del menú */
+    .nav-toggle,.drawer-close{-webkit-tap-highlight-color:transparent}
+    .nav-toggle:focus-visible,.drawer-close:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
     .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
@@ -120,17 +123,6 @@
     .fab a.secondary{background:#10B981}
     .fab svg{width:18px;height:18px;display:block}
     @media (max-width: 900px){.fab{display:flex} body{padding-bottom:76px}}
-
-    /* ===== iOS Safari: eliminar halo/óvalo y doble X ===== */
-    *{-webkit-tap-highlight-color:transparent}
-    a,button{-webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}
-    body.nav-open .site-header{backdrop-filter:none;background:var(--nav-bg)}
-    body.nav-open .drawer-inner{box-shadow:none}
-    .drawer-backdrop{border-radius:0;background:rgba(2,6,23,.55)}
-    .nav-toggle:focus{outline:none;box-shadow:none}
-    .nav-toggle:focus-visible{outline:2px solid #6366F1;outline-offset:2px}
-    /* oculta el botón extra dentro del panel para que no haya dos "X" */
-    .drawer .drawer-close{display:none!important}
   </style>
 
   <!-- Utils (defer) -->
@@ -327,7 +319,7 @@
     cargarCoches();
   </script>
 
-  <!-- Menú hamburguesa -->
+  <!-- Menú hamburguesa: SOLO cierra con la X -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
@@ -344,7 +336,7 @@
         drawer.classList.add('open');
         document.body.classList.add('nav-open');
         toggleBtn.setAttribute('aria-expanded','true');
-        drawer.querySelector(focusableSel)?.focus({preventScroll:true});
+        closeBtn?.focus?.({preventScroll:true});
       };
       const close = () => {
         drawer.classList.remove('open');
@@ -354,15 +346,17 @@
       };
       const isOpen = () => drawer.classList.contains('open');
 
-      toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
+      // El botón hamburguesa SOLO abre (no cierra)
+      toggleBtn.addEventListener('click', () => { if (!isOpen()) open(); }, { passive:true });
+
+      // La X cierra
       closeBtn?.addEventListener('click', close, { passive:true });
-      backdrop?.addEventListener('click', close, { passive:true });
 
-      drawer.addEventListener('click', (e) => {
-        const a = e.target.closest('a[href]');
-        if (a) close();
-      });
+      // NO cerrar al tocar el fondo ni al pulsar enlaces
+      // backdrop?.addEventListener('click', close);    // <- eliminado
+      // drawer.addEventListener('click', e => {...});   // <- eliminado
 
+      // Accesibilidad: permitir cerrar con Escape
       window.addEventListener('keydown', (e) => {
         if (!isOpen()) return;
         if (e.key === 'Escape') { e.preventDefault(); close(); }
@@ -375,11 +369,12 @@
         }
       });
 
-      const reset = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
-      window.addEventListener('pageshow', reset);
-      window.addEventListener('pagehide', reset);
-      window.addEventListener('beforeunload', reset);
-      document.addEventListener('visibilitychange', () => { if (document.hidden) reset(); });
+      // Resets (bfcache/iOS)
+      const resetDrawerState = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
+      window.addEventListener('pageshow', resetDrawerState);
+      window.addEventListener('pagehide', resetDrawerState);
+      window.addEventListener('beforeunload', resetDrawerState);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) resetDrawerState(); });
     })();
   </script>
 </body>
