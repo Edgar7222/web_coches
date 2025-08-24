@@ -37,7 +37,7 @@
     html{scroll-behavior:smooth}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
-    /* ===== Header + Drawer (mismo que index) ===== */
+    /* ===== Header + Drawer ===== */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -50,42 +50,42 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(1){transform:translateY(6px) rotate(45deg)}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(2){opacity:0}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* Drawer */
     .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
     .drawer-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);opacity:0;transition:opacity .28s ease}
-    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding-top:calc(env(safe-area-inset-top,0px));-webkit-overflow-scrolling:touch;overflow:auto}
+    .drawer-inner{
+      position:relative;
+      align-self:start;justify-self:end;
+      width:min(92vw,360px);height:100dvh;
+      background:#0b1220;border-left:1px solid var(--nav-border);
+      box-shadow:0 10px 40px rgba(0,0,0,.6);
+      transform:translateX(100%);transition:transform .28s ease;
+      -webkit-overflow-scrolling:touch;overflow:auto;
+      padding:56px 16px 16px; /* dejamos hueco arriba para el título/X */
+      contain:paint; /* evita “sangrados” de filtros en iOS */
+    }
     @media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
-	
-    /* Cabecera del drawer sin fondo ni blur, y sin ocupar toda la anchura */
-.drawer-top{
-  position: relative;
-  height: 0;                 /* no genera barra */
-  padding: 0;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  pointer-events: none;      /* la capa no intercepta clics; solo la X */
-}
 
-    .drawer-title{ position:absolute; top:14px; left:16px; color:#e5e7eb; pointer-events:none; }
-	
-    /* La X: único “pill” visible */
-.drawer-close{
-  position: absolute; top: 10px; right: 10px;   /* colocada arriba a la derecha */
-  width: 40px; height: 40px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 12px;
-  border: 1px solid var(--nav-border);
-  background: rgba(15,23,42,.92);
-  backdrop-filter: blur(6px);
-  color: #e5e7eb; cursor: pointer;
-  box-shadow: 0 6px 24px rgba(0,0,0,.35);
-  pointer-events: auto;      /* esta sí recibe clics */
-}
+    /* Título y botón X flotantes (sin barra) */
+    .drawer-title{
+      position:absolute; top:12px; left:16px;
+      color:#fff; font-weight:800;
+    }
+    .drawer-close{
+      position:absolute; top:8px; right:8px;
+      width:40px;height:40px;border-radius:12px;
+      border:1px solid var(--nav-border);
+      background:rgba(15,23,42,.92);
+      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+      color:#e5e7eb; cursor:pointer;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+    }
 
-    .drawer-nav{display:flex;flex-direction:column;gap:12px;padding:18px}
+    .drawer-nav{display:flex;flex-direction:column;gap:12px}
     .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
     .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+
     .drawer.open{pointer-events:auto}
     .drawer.open .drawer-inner{transform:translateX(0)}
     .drawer.open .drawer-backdrop{opacity:1}
@@ -143,7 +143,7 @@
 </head>
 <body>
 
-  <!-- Header con hamburguesa -->
+  <!-- Header -->
   <header class="site-header" role="banner">
     <div class="nav-wrap">
       <a class="brand" href="/" aria-label="Inicio">Tu Empresa</a>
@@ -159,13 +159,14 @@
       </nav>
     </div>
 
+    <!-- Drawer -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <div class="drawer-top">
-          <span class="drawer-title">Menú</span>
-          <button class="drawer-close" aria-label="Cerrar menú">✕</button>
-        </div>
-        <nav class="drawer-nav">
+        <!-- Título y X flotantes -->
+        <span class="drawer-title">Menú</span>
+        <button class="drawer-close" aria-label="Cerrar menú">✕</button>
+
+        <nav class="drawer-nav" aria-label="Navegación móvil">
           <a href="/#servicios" class="drawer-link">Servicios</a>
           <a href="/#stock" class="drawer-link">Stock</a>
           <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
@@ -404,7 +405,7 @@
     });
   </script>
 
-  <!-- JS del menú hamburguesa (mismo que index) -->
+  <!-- JS menú -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
