@@ -253,131 +253,91 @@
   </div>
 
   <!-- App: Stock + Lead -->
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+  <script>
+(function(){
+  const BASE = 'https://swzizabjkzllxwbrcsnp.supabase.co/rest/v1';
+  const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA';
 
-    // Supabase (lectura pública)
-    const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+  const grid = document.getElementById('stock-grid');
+  const FALLBACK = 'https://picsum.photos/seed/car/1000/700';
 
-    const grid = document.getElementById("stock-grid");
-    const FALLBACK = "https://picsum.photos/seed/car/1000/700";
+  function coverOf(rec){
+    if (rec.cover) return rec.cover;
+    if (Array.isArray(rec.imagenes) && rec.imagenes.length) return rec.imagenes[0];
+    if (typeof rec.imagenes === 'string') {
+      const m = rec.imagenes.match(/^{"?(.+?)"?}$/);
+      return m ? m[1] : rec.imagenes;
+    }
+    return null;
+  }
+  const sanitizeHTML = s => (s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-    // helper para portada
-    function coverOf(rec){
-      if (rec.cover) return rec.cover;
-      if (Array.isArray(rec.imagenes) && rec.imagenes.length) return rec.imagenes[0];
-      if (typeof rec.imagenes === "string") {
-        const m = rec.imagenes.match(/^{"?(.+?)"?}$/);
-        if (m) return m[1];
-        return rec.imagenes;
-      }
-      return null;
+  async function fetchJSON(url){
+    const res = await fetch(url, { headers:{ apikey: ANON, Authorization: `Bearer ${ANON}` }});
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return res.json();
+  }
+
+  async function fetchCars(){
+    // 1) Intento la VIEW con cover (+ filtro tolerante)
+    const selView = 'id,marca,modelo,version,anio,km,combustible,caja,cover,precio_objetivo,created_at,estado_publicacion';
+    const urlView = `${BASE}/cars_with_cover`
+      + `?select=${encodeURIComponent(selView)}`
+      + `&order=created_at.desc&limit=12`
+      + `&or=${encodeURIComponent('(estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null)')}`;
+
+    try {
+      const data = await fetchJSON(urlView);
+      if (Array.isArray(data) && data.length) return data;
+      console.warn("[HOME] 'cars_with_cover' vacío, paso a 'cars'.");
+    } catch(e){
+      console.warn("[HOME] view falló, paso a 'cars':", e.message);
     }
 
-    const cardHTML = (c) => {
-      const titulo  = `${c.marca ?? ""} ${c.modelo ?? ""} ${c.anio ?? ""}`.trim();
-      const imgSrc  = coverOf(c) || FALLBACK;
-      const km      = (c.km ?? 0).toLocaleString("es-ES");
-      const resumen = [km && `${km} km`, c.combustible, c.caja].filter(Boolean).join(" · ");
-      const precio  = c.precio_objetivo ? `${Number(c.precio_objetivo).toLocaleString("es-ES")} €` : "Bajo pedido";
+    // 2) Fallback a la TABLA (sin filtrar estado para no quedarnos a 0)
+    const sel = 'id,marca,modelo,version,anio,km,combustible,caja,imagenes,precio_objetivo,created_at,estado_publicacion';
+    const url = `${BASE}/cars?select=${encodeURIComponent(sel)}&order=created_at.desc&limit=12`;
+    return fetchJSON(url);
+  }
+
+  function render(cars){
+    grid.innerHTML = cars.map(c => {
+      const titulo = `${c.marca ?? ''} ${c.modelo ?? ''} ${c.anio ?? ''}`.trim();
+      const img    = coverOf(c) || FALLBACK;
+      const km     = c.km != null ? `${Number(c.km).toLocaleString('es-ES')} km · ` : '';
+      const sub    = `${km}${c.combustible ?? '-'} · ${c.caja ?? '-'}`;
+      const price  = c.precio_objetivo != null ? `${Number(c.precio_objetivo).toLocaleString('es-ES')} €` : 'Bajo pedido';
       return `
         <article class="card" role="listitem">
           <a href="car.html?id=${encodeURIComponent(c.id)}" aria-label="Ver ${sanitizeHTML(titulo)}">
-            <img src="${imgSrc}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async" width="400" height="260"
+            <img src="${img}" alt="${sanitizeHTML(titulo)}" loading="lazy" decoding="async"
                  referrerpolicy="no-referrer"
                  onerror="this.onerror=null;this.src='${FALLBACK}'">
           </a>
           <div style="padding:10px">
             <b style="color:#fff">${sanitizeHTML(titulo)}</b><br>
-            <span>${sanitizeHTML(resumen)}</span><br>
-            <span class="tag" style="color:#E5E7EB">${sanitizeHTML(precio)}</span>
+            <span>${sanitizeHTML(sub)}</span><br>
+            <span class="tag" style="color:#E5E7EB">${sanitizeHTML(price)}</span>
           </div>
         </article>`;
-    };
+    }).join('');
+  }
 
-    async function cargarCoches() {
+  (async () => {
+    try{
       if (!grid) return;
       grid.innerHTML = "<p style='color:var(--muted)'>Cargando coches…</p>";
-
-      // 1) Intento con la VIEW
-      let { data, error } = await supabase
-        .from("cars_with_cover")
-        .select("id, marca, modelo, version, anio, km, combustible, caja, cover, precio_objetivo, created_at, estado_publicacion")
-        // tolerante: publicados, disponibles o NULL
-        .or("estado_publicacion.eq.publicado,estado_publicacion.eq.disponible,estado_publicacion.is.null")
-        .order("created_at", { ascending: false })
-        .limit(12);
-
-      // 2) Fallback si hay error **o si la view devuelve 0**
-      if (error || !(data && data.length)) {
-        if (error) console.warn("[HOME] usando fallback a 'cars' por error:", error.message);
-        else console.warn("[HOME] 'cars_with_cover' vacío, usando fallback a 'cars'.");
-
-        const fb = await supabase
-          .from("cars")
-          .select("id, marca, modelo, version, anio, km, combustible, caja, imagenes, precio_objetivo, created_at, estado_publicacion")
-          // en fallback NO filtro por estado para no quedarnos sin coches
-          .order("created_at", { ascending: false })
-          .limit(12);
-
-        if (!fb.error) { data = fb.data; }
-        else { console.error(fb.error); }
-      }
-
-      if (!data?.length) {
-        grid.innerHTML = `<p style="color:var(--muted)">No hay coches publicados ahora mismo.</p>`;
-        return;
-      }
-      grid.innerHTML = data.map(cardHTML).join("");
+      const cars = await fetchCars();
+      if (!cars.length){ grid.innerHTML = "<p style='color:var(--muted)'>No hay coches publicados ahora mismo.</p>"; return; }
+      render(cars);
+    }catch(e){
+      console.error(e);
+      grid.innerHTML = "<p style='color:#FCA5A5'>Error cargando coches.</p>";
     }
+  })();
+})();
+</script>
 
-    // Lead (envío)
-    const form = document.getElementById("contact-form");
-    const btn = document.getElementById("submit-btn");
-    const statusEl = document.getElementById("form-status");
-
-    form?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      statusEl.textContent = "";
-      btn.disabled = true;
-
-      const fd = new FormData(form);
-      if (fd.get("company")) { btn.disabled = false; return; } // honeypot
-
-      const payload = {
-        nombre: (fd.get("nombre")||"").toString().trim(),
-        email: (fd.get("email")||"").toString().trim(),
-        telefono: (fd.get("telefono")||"").toString().trim() || null,
-        mensaje: (fd.get("mensaje")||"").toString().trim(),
-        coche_interes: (fd.get("coche_interes")||"").toString().trim() || null,
-        car_id: (fd.get("car_id")||"").toString().trim() || null,
-        page_url: location.href,
-        user_agent: navigator.userAgent
-      };
-
-      if (!Validator.required(payload.nombre, 2)){ statusEl.textContent="Nombre inválido."; btn.disabled=false; return; }
-      if (!Validator.email(payload.email)){ statusEl.textContent="Email inválido."; btn.disabled=false; return; }
-      if (!Validator.required(payload.mensaje, 10)){ statusEl.textContent="Mensaje demasiado corto."; btn.disabled=false; return; }
-      if (payload.telefono && !Validator.phone(payload.telefono)){ statusEl.textContent="Teléfono inválido."; btn.disabled=false; return; }
-
-      statusEl.textContent = "Enviando...";
-      try{
-        const res = await fetch("/api/notify-lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-        if(!res.ok) throw new Error("Error en el envío");
-        statusEl.textContent = "¡Gracias! Te contactaremos en breve.";
-        form.reset();
-        notify?.success?.("Lead enviado correctamente");
-      }catch(err){
-        console.error(err);
-        statusEl.textContent = "No se pudo enviar. Prueba de nuevo.";
-        notify?.error?.("No se pudo enviar el formulario");
-      }finally{ btn.disabled=false; }
-    });
-
-    cargarCoches();
-  </script>
 
   <!-- Menú (solo X cierra) -->
   <script>
