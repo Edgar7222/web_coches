@@ -51,46 +51,58 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(2){opacity:0}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
-    /* Drawer */
-    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);opacity:0;transition:opacity .28s ease}
-    .drawer-inner{
-      position:relative;
-      align-self:start;justify-self:end;
-      width:min(92vw,360px);height:100dvh;
-      background:#0b1220;border-left:1px solid var(--nav-border);
-      box-shadow:0 10px 40px rgba(0,0,0,.6);
-      transform:translateX(100%);transition:transform .28s ease;
-      -webkit-overflow-scrolling:touch;overflow:auto;
-      padding:56px 16px 16px; /* dejamos hueco arriba para el título/X */
-      contain:paint; /* evita “sangrados” de filtros en iOS */
-    }
-    @media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
+    /* Etiqueta simple arriba del menú */
+.drawer-label{
+  margin:12px 16px 4px;
+  color:#9CA3AF; font-weight:700;
+}
 
-    /* Título y botón X flotantes (sin barra) */
-    .drawer-title{
-      position:absolute; top:12px; left:16px;
-      color:#fff; font-weight:800;
-    }
-    .drawer-close{
-      position:absolute; top:8px; right:8px;
-      width:40px;height:40px;border-radius:12px;
-      border:1px solid var(--nav-border);
-      background:rgba(15,23,42,.92);
-      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
-      color:#e5e7eb; cursor:pointer;
-      box-shadow:0 6px 24px rgba(0,0,0,.35);
-    }
+/* Quitamos por completo la barra superior del drawer */
+.drawer-top{ display:none !important; }
 
-    .drawer-nav{display:flex;flex-direction:column;gap:12px}
-    .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
-    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+/* Botón de cerrar fijo, con pill SOLO detrás de la “X” */
+.drawer-close{
+  position:fixed;
+  top:calc(10px + env(safe-area-inset-top,0px));
+  right:10px;
+  width:40px; height:40px;
+  border-radius:12px;
+  border:1px solid var(--nav-border);
+  background:rgba(15,23,42,.92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color:#e5e7eb; cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,0,0,.35);
+  z-index:65;                   /* por encima del drawer/backdrop */
+  opacity:0; transform:scale(.96);
+  pointer-events:none;          /* desactivado por defecto */
+  transition:opacity .18s ease, transform .18s ease;
+}
+/* Solo visible/clicable cuando el drawer está abierto */
+.drawer.open .drawer-close{
+  opacity:1; transform:scale(1);
+  pointer-events:auto;
+}
 
-    .drawer.open{pointer-events:auto}
-    .drawer.open .drawer-inner{transform:translateX(0)}
-    .drawer.open .drawer-backdrop{opacity:1}
-    body.nav-open{overflow:hidden}
-    @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
+/* Drawer/backdrop como estaba */
+.drawer{position:fixed; inset:0; display:grid; pointer-events:none; z-index:60}
+.drawer-backdrop{position:fixed; inset:0; background:rgba(2,6,23,.55); opacity:0; transition:opacity .28s ease}
+.drawer-inner{
+  align-self:start; justify-self:end;
+  width:min(92vw,360px); height:100dvh;
+  background:#0b1220; border-left:1px solid var(--nav-border);
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+  transform:translateX(100%); transition:transform .28s ease;
+  display:flex; flex-direction:column; overflow:auto; -webkit-overflow-scrolling:touch;
+}
+@media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
+.drawer-nav{display:flex; flex-direction:column; gap:12px; padding:18px}
+.drawer-link{padding:12px 14px; border-radius:12px; text-decoration:none; color:var(--text); font-weight:600; border:1px solid transparent}
+.drawer-link:hover{background:rgba(255,255,255,.06); border-color:var(--nav-border); color:#fff}
+.drawer.open{pointer-events:auto}
+.drawer.open .drawer-inner{transform:translateX(0)}
+.drawer.open .drawer-backdrop{opacity:1}
+
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
@@ -159,22 +171,22 @@
       </nav>
     </div>
 
-    <!-- Drawer -->
-    <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
-      <div class="drawer-inner">
-        <!-- Título y X flotantes -->
-        <span class="drawer-title">Menú</span>
-        <button class="drawer-close" aria-label="Cerrar menú">✕</button>
+    <!-- Drawer móvil -->
+<div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
+  <div class="drawer-inner">
+    <div class="drawer-label">Menú</div>
+    <nav class="drawer-nav">
+      <a href="/#servicios" class="drawer-link">Servicios</a>
+      <a href="/#stock" class="drawer-link">Stock</a>
+      <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
+    </nav>
+    <div style="height:calc(12px + env(safe-area-inset-bottom,0px))"></div>
+  </div>
 
-        <nav class="drawer-nav" aria-label="Navegación móvil">
-          <a href="/#servicios" class="drawer-link">Servicios</a>
-          <a href="/#stock" class="drawer-link">Stock</a>
-          <a href="/#contacto" class="drawer-link btn primary" style="text-align:center;">Contacto</a>
-        </nav>
-        <div style="height:calc(12px + env(safe-area-inset-bottom,0px))"></div>
-      </div>
-      <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
-    </div>
+  <!-- Importante: el botón de cerrar va FUERA y en posición fija -->
+  <button class="drawer-close" aria-label="Cerrar menú">✕</button>
+  <button class="drawer-backdrop" tabindex="-1" aria-hidden="true"></button>
+</div>
   </header>
 
   <main class="container" id="car-container">
