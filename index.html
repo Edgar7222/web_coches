@@ -61,11 +61,6 @@
       border-bottom:1px solid var(--nav-border);
       backdrop-filter:blur(8px) saturate(120%);
     }
-    /* ⬇️ Quita el efecto blur cuando el menú está abierto (evita la franja opaca) */
-    body.nav-open .site-header{
-      backdrop-filter:none !important;
-    }
-
     .nav-wrap{
       max-width:1200px; margin:0 auto;
       padding:12px 16px; height:var(--nav-h);
@@ -111,27 +106,28 @@
       box-shadow:0 10px 40px rgba(0,0,0,.6);
       transform:translateX(100%); transition:transform .28s ease;
       display:flex; flex-direction:column;
-      padding:18px;               /* ⬅️ padding uniforme */
-      position:relative;          /* ⬅️ para posicionar la X */
+      padding-top:calc(env(safe-area-inset-top,0px));
       -webkit-overflow-scrolling:touch; overflow:auto;
     }
     /* ancho tablet */
     @media (min-width:600px) and (max-width:899px){
       .drawer-inner{ width:420px; }
     }
-
-    /* ⬇️ Se elimina .drawer-top por completo */
-
-    .drawer-title{ display:none; } /* ya no se usa */
-    .drawer-close{
-      position:absolute; top:12px; right:12px;
-      width:40px; height:40px; border-radius:12px;
-      border:1px solid var(--nav-border);
-      background:#1f2937; color:#e5e7eb;
-      cursor:pointer; display:flex; align-items:center; justify-content:center;
-      box-shadow:0 8px 24px rgba(0,0,0,.35);
+    .drawer-top{
+      position:sticky; top:0;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 16px calc(12px + env(safe-area-inset-top,0px));
+      padding-top:calc(12px + env(safe-area-inset-top,0px));
+      background:linear-gradient(180deg, rgba(15,23,42,0.98), rgba(15,23,42,0.92));
+      border-bottom:1px solid var(--nav-border);
+      backdrop-filter:blur(8px);
+      z-index:1;
     }
-    .drawer-nav{ display:flex; flex-direction:column; gap:12px; padding-top:46px; } /* espacio para la X */
+    .drawer-title{ color:#fff; font-weight:800; letter-spacing:.2px; }
+    .drawer-close{
+      width:40px;height:40px;border-radius:12px;border:1px solid var(--nav-border);background:transparent;color:#e5e7eb;cursor:pointer;;flex:0 0 auto;display:flex;display:flex;justify-content:center;
+    }
+    .drawer-nav{ display:flex; flex-direction:column; gap:12px; padding:18px; }
     .drawer-link{
       padding:12px 14px; border-radius:12px;
       color:var(--text); font-weight:600; border:1px solid transparent;
@@ -247,9 +243,10 @@
     <!-- Drawer móvil -->
     <div id="mobile-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
       <div class="drawer-inner">
-        <!-- ⬇️ Sin .drawer-top. Solo la X absoluta -->
-        <button class="drawer-close" aria-label="Cerrar menú">✕</button>
-
+        <div class="drawer-top">
+          <span class="drawer-title">Menú</span>
+          <button class="drawer-close" aria-label="Cerrar menú">✕</button>
+        </div>
         <nav class="drawer-nav">
           <a href="#servicios" class="drawer-link">Servicios</a>
           <a href="#stock" class="drawer-link">Stock</a>
