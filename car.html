@@ -106,6 +106,87 @@
     .sticky-cta .cta-btn{background:var(--primary); color:#fff; padding:12px 18px; border-radius:999px; font-weight:700; text-decoration:none; display:inline-block}
     @media (max-width: 900px){ .sticky-cta{display:flex} body{padding-bottom:72px} }
     .sticky-cta.hidden{transform:translateY(110%); transition:transform .25s ease}
+	
+	/* === iPad / tablet drawer fix ===
+   Ancho más cómodo, altura fiable en iOS (vh/dvh/svh),
+   backdrop sólido y sin “fugas” detrás del panel.
+   Aplica en index.html y car.html.
+*/
+.drawer{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  pointer-events: none;
+  z-index: 100; /* por encima del header */
+}
+.drawer-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, .55);
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+.drawer-inner{
+  align-self: start;
+  justify-self: end;
+
+  /* ancho más cómodo en tablet */
+  width: clamp(320px, 78vw, 560px);
+
+  /* altura fiable en iOS */
+  height: 100vh;
+  height: 100dvh;
+  height: 100svh;
+
+  background: #0b1220;
+  border-left: 1px solid var(--nav-border);
+  box-shadow: -24px 0 48px rgba(0,0,0,.6);
+
+  transform: translateX(100%);
+  transition: transform .28s ease;
+
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* respeta notch / status bar */
+  padding: 18px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+
+  will-change: transform;
+}
+
+@media (min-width: 768px) and (max-width: 899px){
+  .drawer-inner{ width: min(88vw, 560px); }
+}
+
+.drawer.open{ pointer-events: auto; }
+.drawer.open .drawer-inner{ transform: translateX(0); }
+.drawer.open .drawer-backdrop{ opacity: 1; }
+
+.drawer-close{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--nav-border);
+  background: #111827;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+/* bloquea scroll de la página mientras el panel está abierto (iOS) */
+body.nav-open{
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
   </style>
 
   <!-- Utils (defer) -->
