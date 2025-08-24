@@ -38,7 +38,15 @@
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
     /* ===== Header + Drawer ===== */
-    .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
+    
+	/* 1) Aísla el header para que su blur no “sangre” fuera */
+.site-header{
+  isolation:isolate;                    /* clave */
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  backdrop-filter: blur(8px) saturate(120%);
+  background: rgba(15,23,42,.92);       /* un poco más opaco ayuda en iOS */
+}
+	
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
     .nav-desktop{display:none;gap:16px;align-items:center}
@@ -51,58 +59,48 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(2){opacity:0}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
-    /* Etiqueta simple arriba del menú */
-.drawer-label{
-  margin:12px 16px 4px;
-  color:#9CA3AF; font-weight:700;
+    /* Drawer */
+    .drawer{ isolation:isolate; z-index: 1000; } /* por encima del header seguro */
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);opacity:0;transition:opacity .28s ease}
+    .drawer-inner{
+  contain: paint;                        /* evita artefactos en iOS */
+  will-change: transform;
+  transform: translateZ(0);              /* fuerza nueva capa en WebKit */
 }
 
-/* Quitamos por completo la barra superior del drawer */
-.drawer-top{ display:none !important; }
-
-/* Botón de cerrar fijo, con pill SOLO detrás de la “X” */
-.drawer-close{
-  position:fixed;
-  top:calc(10px + env(safe-area-inset-top,0px));
-  right:10px;
-  width:40px; height:40px;
-  border-radius:12px;
-  border:1px solid var(--nav-border);
-  background:rgba(15,23,42,.92);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  color:#e5e7eb; cursor:pointer;
-  box-shadow:0 6px 24px rgba(0,0,0,.35);
-  z-index:65;                   /* por encima del drawer/backdrop */
-  opacity:0; transform:scale(.96);
-  pointer-events:none;          /* desactivado por defecto */
-  transition:opacity .18s ease, transform .18s ease;
-}
-/* Solo visible/clicable cuando el drawer está abierto */
-.drawer.open .drawer-close{
-  opacity:1; transform:scale(1);
-  pointer-events:auto;
+/* 3) (Opcional pero efectivo) Mientras el menú esté abierto,
+      ocultamos visualmente el header para eliminar cualquier mezcla.  */
+body.nav-open .site-header{
+  visibility:hidden;                     /* mantiene el alto, no hay salto */
+  pointer-events:none;
 }
 
-/* Drawer/backdrop como estaba */
-.drawer{position:fixed; inset:0; display:grid; pointer-events:none; z-index:60}
-.drawer-backdrop{position:fixed; inset:0; background:rgba(2,6,23,.55); opacity:0; transition:opacity .28s ease}
-.drawer-inner{
-  align-self:start; justify-self:end;
-  width:min(92vw,360px); height:100dvh;
-  background:#0b1220; border-left:1px solid var(--nav-border);
-  box-shadow:0 10px 40px rgba(0,0,0,.6);
-  transform:translateX(100%); transition:transform .28s ease;
-  display:flex; flex-direction:column; overflow:auto; -webkit-overflow-scrolling:touch;
-}
-@media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
-.drawer-nav{display:flex; flex-direction:column; gap:12px; padding:18px}
-.drawer-link{padding:12px 14px; border-radius:12px; text-decoration:none; color:var(--text); font-weight:600; border:1px solid transparent}
-.drawer-link:hover{background:rgba(255,255,255,.06); border-color:var(--nav-border); color:#fff}
-.drawer.open{pointer-events:auto}
-.drawer.open .drawer-inner{transform:translateX(0)}
-.drawer.open .drawer-backdrop{opacity:1}
+    @media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
 
+    /* Título y botón X flotantes (sin barra) */
+    .drawer-title{
+      position:absolute; top:12px; left:16px;
+      color:#fff; font-weight:800;
+    }
+    .drawer-close{
+      position:absolute; top:8px; right:8px;
+      width:40px;height:40px;border-radius:12px;
+      border:1px solid var(--nav-border);
+      background:rgba(15,23,42,.92);
+      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+      color:#e5e7eb; cursor:pointer;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+    }
+
+    .drawer-nav{display:flex;flex-direction:column;gap:12px}
+    .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
+    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
+
+    .drawer.open{pointer-events:auto}
+    .drawer.open .drawer-inner{transform:translateX(0)}
+    .drawer.open .drawer-backdrop{opacity:1}
+    body.nav-open{overflow:hidden}
+    @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
     h1{font-size:clamp(1.6rem,2.4vw,2.25rem);margin:0 0 18px;font-weight:800;letter-spacing:.2px;color:#fff}
