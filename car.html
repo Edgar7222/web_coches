@@ -34,8 +34,10 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
+    html,body{max-width:100%; overflow-x:hidden}
     body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.55}
 
+    /* Header + Drawer (mismo que index) */
     .site-header{position:sticky; top:0; z-index:50; background:var(--nav-bg); border-bottom:1px solid var(--nav-border); backdrop-filter:blur(8px) saturate(120%)}
     .nav-wrap{max-width:1100px;margin:0 auto;padding:12px 16px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{color:#fff;font-weight:800;letter-spacing:.2px;text-decoration:none;font-size:clamp(1.05rem,2vw,1.2rem)}
@@ -48,21 +50,24 @@
     .nav-toggle[aria-expanded="true"] .bar:nth-child(1){transform:translateY(6px) rotate(45deg)}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(2){opacity:0}
     .nav-toggle[aria-expanded="true"] .bar:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .nav-toggle,.drawer-close{-webkit-tap-highlight-color:transparent}
-    .nav-toggle:focus-visible,.drawer-close:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     @media (min-width:900px){.nav-toggle{display:none}.nav-desktop{display:flex}}
 
-    .drawer{position:fixed;inset:0;display:grid;grid-template-columns:1fr;pointer-events:none;z-index:60}
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);opacity:0;transition:opacity .28s ease}
-    .drawer-inner{align-self:start;justify-self:end;width:min(92vw,360px);height:100dvh;background:#0b1220;border-left:1px solid var(--nav-border);box-shadow:0 10px 40px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;padding:18px;-webkit-overflow-scrolling:touch;overflow:auto;will-change:transform;position:relative}
-    @media (min-width:600px) and (max-width:899px){ .drawer-inner{width:420px} }
-    .drawer-nav{display:flex;flex-direction:column;gap:12px}
-    .drawer-link{padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--text);font-weight:600;border:1px solid transparent}
-    .drawer-link:hover{background:rgba(255,255,255,.06);border-color:var(--nav-border);color:#fff}
-    .drawer.open{ pointer-events:auto }
+    .drawer{position:fixed; inset:0; z-index:100; pointer-events:none;}
+    .drawer-inner{
+      position:absolute; top:0; right:0;
+      width:clamp(320px,85vw,420px);
+      height:100vh; height:100dvh; height:100svh;
+      background:#0b1220; border-left:1px solid var(--nav-border);
+      box-shadow:-24px 0 48px rgba(0,0,0,.6);
+      transform:translateX(100%); transition:transform .28s ease;
+      display:flex; flex-direction:column; overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:18px; padding-top:calc(12px + env(safe-area-inset-top,0px));
+      pointer-events:auto;
+    }
     .drawer.open .drawer-inner{ transform:translateX(0) }
-    .drawer.open .drawer-backdrop{ opacity:1 }
+    .drawer-backdrop{ display:none !important }
     body.nav-open{ overflow:hidden; touch-action:none }
+
     .drawer-close{position:absolute; top:10px; right:10px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid var(--nav-border); background:#111827; color:#e5e7eb; cursor:pointer }
 
     .container{max-width:1100px;margin:0 auto;padding:28px 18px}
@@ -109,7 +114,6 @@
     .sticky-cta.hidden{transform:translateY(110%); transition:transform .25s ease}
   </style>
 
-  <!-- Utils (defer) -->
   <script src="js/utils.js" defer></script>
 </head>
 <body>
@@ -175,7 +179,6 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    // Lectura pública del coche
     const SUPABASE_URL  = "https://swzizabjkzllxwbrcsnp.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3eml6YWJqa3psbHh3YnJjc25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4MTU5MTUsImV4cCI6MjA3MTM5MTkxNX0.VDQH9t34ij9BAzV-pd0kXFUru179d1b21VNeV7VlkjA";
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -279,7 +282,6 @@
 
         gallery.addEventListener('mouseenter', stop);
         gallery.addEventListener('mouseleave', start);
-        document.addEventListener('visibilitychange', () => { document.hidden ? stop() : start(); });
 
         // Gestos
         let startX=0, dx=0, touching=false;
@@ -334,10 +336,7 @@
       priceEl.textContent = data.precio_objetivo ? `${Number(data.precio_objetivo).toLocaleString('es-ES')} €` : 'Bajo pedido';
 
       const form = document.getElementById('contact-form');
-      const io = new IntersectionObserver((entries)=>{
-        const visible = entries[0].isIntersecting;
-        bar.classList.toggle('hidden', visible);
-      }, { threshold: 0.35 });
+      const io = new IntersectionObserver((entries)=>{ bar.classList.toggle('hidden', entries[0].isIntersecting); }, { threshold: 0.35 });
       io.observe(form);
 
       $('#coche_interes').value = title;
@@ -359,18 +358,13 @@
       };
 
       const statusEl = document.getElementById('form-status');
-
       if (!Validator.required(payload.nombre, 2)) { statusEl.textContent = 'Nombre inválido.'; return; }
       if (!Validator.email(payload.email)) { statusEl.textContent = 'Email inválido.'; return; }
       if (!Validator.required(payload.mensaje, 10)) { statusEl.textContent = 'Mensaje demasiado corto.'; return; }
 
       statusEl.textContent = 'Enviando…';
       try {
-        const res = await fetch('/api/notify-lead', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(payload)
-        });
+        const res = await fetch('/api/notify-lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
         if (!res.ok) throw 0;
         statusEl.textContent = '¡Gracias! Te contactaremos en breve.';
         formEl.reset();
@@ -382,57 +376,27 @@
     });
   </script>
 
-  <!-- Menú: SOLO cierra con la X -->
+  <!-- Menú -->
   <script>
     (() => {
       const toggleBtn = document.getElementById('nav-toggle');
       const drawer    = document.getElementById('mobile-drawer');
-      const backdrop  = drawer?.querySelector('.drawer-backdrop');
       const closeBtn  = drawer?.querySelector('.drawer-close');
       if (!toggleBtn || !drawer) return;
 
-      const focusableSel = ['a[href]','button:not([disabled])','input','select','textarea','[tabindex]:not([tabindex="-1"])'].join(',');
-      let lastFocused = null;
-
-      const open = () => {
-        lastFocused = document.activeElement;
-        drawer.classList.add('open');
-        document.body.classList.add('nav-open');
-        toggleBtn.setAttribute('aria-expanded','true');
-        closeBtn?.focus?.({preventScroll:true});
-      };
-      const close = () => {
-        drawer.classList.remove('open');
-        document.body.classList.remove('nav-open');
-        toggleBtn.setAttribute('aria-expanded','false');
-        lastFocused?.focus?.({preventScroll:true});
-      };
+      const open = () => { drawer.classList.add('open'); document.body.classList.add('nav-open'); toggleBtn.setAttribute('aria-expanded','true'); };
+      const close = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
       const isOpen = () => drawer.classList.contains('open');
 
-      toggleBtn.addEventListener('click', () => { if (!isOpen()) open(); }, { passive:true });
+      toggleBtn.addEventListener('click', () => isOpen() ? close() : open(), { passive:true });
       closeBtn?.addEventListener('click', close, { passive:true });
+      window.addEventListener('keydown', (e) => { if (isOpen() && e.key === 'Escape') { e.preventDefault(); close(); } });
 
-      // NO cerrar por fondo ni por links
-      // backdrop?.addEventListener('click', close);
-      // drawer.addEventListener('click', (e)=>{ const a=e.target.closest('a[href]'); if(a) close(); });
-
-      window.addEventListener('keydown', (e) => {
-        if (!isOpen()) return;
-        if (e.key === 'Escape') { e.preventDefault(); close(); }
-        if (e.key === 'Tab') {
-          const f = [...drawer.querySelectorAll(focusableSel)];
-          if (!f.length) return;
-          const first = f[0], last = f[f.length-1];
-          if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-          else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-        }
-      });
-
-      const resetDrawerState = () => { drawer.classList.remove('open'); document.body.classList.remove('nav-open'); toggleBtn.setAttribute('aria-expanded','false'); };
-      window.addEventListener('pageshow', resetDrawerState);
-      window.addEventListener('pagehide', resetDrawerState);
-      window.addEventListener('beforeunload', resetDrawerState);
-      document.addEventListener('visibilitychange', () => { if (document.hidden) resetDrawerState(); });
+      const reset = () => close();
+      window.addEventListener('pageshow', reset);
+      window.addEventListener('pagehide', reset);
+      window.addEventListener('beforeunload', reset);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) reset(); });
     })();
   </script>
 </body>
